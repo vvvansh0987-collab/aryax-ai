@@ -410,6 +410,75 @@ def image():
         return jsonify({'error': str(e)}), 500
 
 
+@app.post('/api/search')
+def web_search():
+    """Web search via DuckDuckGo instant answers"""
+    try:
+        data = request.json
+        query = data.get('query', '').strip()
+        if not query:
+            return jsonify({'error': 'Query required'}), 400
+
+        resp = requests.get(
+            'https://api.duckduckgo.com/',
+            params={'q': query, 'format': 'json', 'no_html': 1, 't': 'aryax-ai'},
+            timeout=10
+        )
+        result = resp.json()
+
+        # Collect useful info
+        answer_parts = []
+        if result.get('AbstractText'):
+            answer_parts.append(result['AbstractText'])
+        if result.get('Answer'):
+            answer_parts.append(result['Answer'])
+        for topic in result.get('RelatedTopics', [])[:5]:
+            if isinstance(topic, dict) and topic.get('Text'):
+                answer_parts.append(f"• {topic['Text']}")
+
+        if not answer_parts:
+            return jsonify({'result': f'No instant results for "{query}". Try asking AryaX AI directly!'})
+
+        return jsonify({'result': '\n\n'.join(answer_parts), 'source': result.get('AbstractURL', '')})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.post('/api/readurl')
+def read_url():
+    """Fetch and extract text from a URL"""
+    try:
+        data = request.json
+        url = data.get('url', '').strip()
+        if not url:
+            return jsonify({'error': 'URL required'}), 400
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+
+        resp = requests.get(url, timeout=15, headers={
+            'User-Agent': 'AryaX-AI/1.0 (Educational Bot)'
+        })
+        resp.raise_for_status()
+
+        # Simple HTML to text
+        import re
+        text = resp.text
+        text = re.sub(r'<script[^>]*>[\s\S]*?</script>', '', text)
+        text = re.sub(r'<style[^>]*>[\s\S]*?</style>', '', text)
+        text = re.sub(r'<[^>]+>', ' ', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+
+        # Truncate
+        if len(text) > 3000:
+            text = text[:3000] + '... (truncated)'
+
+        return jsonify({'content': text, 'url': url})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.post('/api/clear')
 def clear():
     data = request.json

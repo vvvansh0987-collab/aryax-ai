@@ -263,6 +263,118 @@ async function generateImage(prompt){
   }catch{removeTyping();addBotMessage("Image generation failed.")}
 }
 
+// ===== SLASH COMMANDS =====
+async function handleSlashCommand(msg){
+  const parts=msg.split(/\s+/);
+  const cmd=parts[0].toLowerCase();
+  const arg=parts.slice(1).join(" ");
+
+  if(cmd==="/help"){
+    addUserMessage(msg);
+    addBotMessage(`## ⚡ AryaX Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| \`/search <query>\` | 🔍 Web search (DuckDuckGo) |
+| \`/url <link>\` | 🌐 Read & analyze any website |
+| \`/run <code>\` | ▶️ Execute JavaScript code live |
+| \`/calc <expression>\` | 🧮 Instant calculator |
+| \`/time\` | 🕐 Current time |
+| \`/credits\` | ⚡ Check remaining credits |
+| \`/weather <city>\` | 🌤️ Weather info |
+| \`/qr <text>\` | 📱 Generate QR code |
+| \`/help\` | ❓ This help menu |
+
+**Pro tip:** You can also just type normally!`);
+    return true;
+  }
+
+  if(cmd==="/credits"){
+    addUserMessage(msg);
+    addBotMessage(\`⚡ **Credits:** \${creditCount.textContent} / 5000 remaining today\`);
+    return true;
+  }
+
+  if(cmd==="/time"){
+    addUserMessage(msg);
+    addBotMessage(\`🕐 **Current Time:** \${new Date().toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})}\`);
+    return true;
+  }
+
+  if(cmd==="/calc"){
+    addUserMessage(msg);
+    try{
+      const result=Function('"use strict";return ('+arg+')')();
+      addBotMessage(\`🧮 **Result:** \\\`\${arg}\\\` = **\${result}**\`);
+    }catch(e){addBotMessage(\`❌ Calc error: \${e.message}\`)}
+    return true;
+  }
+
+  if(cmd==="/run"){
+    addUserMessage(msg);
+    addBotMessage("▶️ **Running JavaScript...**");
+    try{
+      const logs=[];
+      const fakeConsole={log:(...a)=>logs.push(a.map(String).join(" ")),error:(...a)=>logs.push("❌ "+a.map(String).join(" ")),warn:(...a)=>logs.push("⚠️ "+a.map(String).join(" "))};
+      const fn=new Function("console",arg);
+      const result=fn(fakeConsole);
+      let output=logs.length?logs.join("\\n"):"";
+      if(result!==undefined)output+=(output?"\\n":"")+"→ "+String(result);
+      addBotMessage(\`\\\`\\\`\\\`\\n\${output||"(no output)"}\\n\\\`\\\`\\\`\`);
+    }catch(e){addBotMessage(\`❌ **Error:** \\\`\${e.message}\\\`\`)}
+    return true;
+  }
+
+  if(cmd==="/search"){
+    if(!arg){addUserMessage(msg);addBotMessage("❌ Usage: `/search your query`");return true}
+    addUserMessage(msg);addTyping();
+    try{
+      const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:arg})});
+      const d=await r.json();removeTyping();
+      let text=\`## 🔍 Search: "\${arg}"\\n\\n\${d.result||d.error||"No results"}\`;
+      if(d.source)text+=\`\\n\\n[Source](\${d.source})\`;
+      addBotMessage(text);
+    }catch{removeTyping();addBotMessage("❌ Search failed")}
+    return true;
+  }
+
+  if(cmd==="/url"){
+    if(!arg){addUserMessage(msg);addBotMessage("❌ Usage: `/url https://example.com`");return true}
+    addUserMessage(msg);addTyping();
+    try{
+      const r=await fetch("/api/readurl",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:arg})});
+      const d=await r.json();removeTyping();
+      if(d.error){addBotMessage(\`❌ \${d.error}\`);return true}
+      // Send content to AI for summary
+      input.value=\`Summarize this webpage content from \${arg}:\\n\\n\${d.content}\`;
+      sendMessage();
+    }catch{removeTyping();addBotMessage("❌ URL fetch failed")}
+    return true;
+  }
+
+  if(cmd==="/qr"){
+    if(!arg){addUserMessage(msg);addBotMessage("❌ Usage: `/qr your text or URL`");return true}
+    addUserMessage(msg);
+    const qrUrl=\`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=\${encodeURIComponent(arg)}\`;
+    addBotMessage(\`## 📱 QR Code\\n\\n![](\${qrUrl})\\n\\n**Data:** \${arg}\`);
+    return true;
+  }
+
+  if(cmd==="/weather"){
+    if(!arg){addUserMessage(msg);addBotMessage("❌ Usage: `/weather city name`");return true}
+    addUserMessage(msg);addTyping();
+    try{
+      const r=await fetch(\`https://wttr.in/\${encodeURIComponent(arg)}?format=j1\`);
+      const d=await r.json();removeTyping();
+      const c=d.current_condition[0];
+      addBotMessage(\`## 🌤️ Weather: \${arg}\\n\\n| Info | Value |\\n|------|-------|\\n| 🌡️ Temp | \${c.temp_C}°C (\${c.temp_F}°F) |\\n| 💨 Wind | \${c.windspeedKmph} km/h |\\n| 💧 Humidity | \${c.humidity}% |\\n| ☁️ Condition | \${c.weatherDesc[0].value} |\\n| 🌬️ Feels Like | \${c.FeelsLikeC}°C |\`);
+    }catch{removeTyping();addBotMessage("❌ Weather fetch failed")}
+    return true;
+  }
+
+  return false; // Not a slash command
+}
+
 // ===== SEND MESSAGE (STREAMING) =====
 async function sendMessage(){
   const msg=input.value.trim();
@@ -270,6 +382,12 @@ async function sendMessage(){
   isTyping=true;sendBtn.disabled=true;
   input.value="";input.style.height="auto";
   updateRecent(msg);
+
+  // Handle slash commands
+  if(msg.startsWith("/")){
+    const handled=await handleSlashCommand(msg);
+    if(handled){isTyping=false;sendBtn.disabled=false;input.focus();return}
+  }
 
   if(currentMode==="image"){await generateImage(msg);isTyping=false;sendBtn.disabled=false;input.focus();return}
 
