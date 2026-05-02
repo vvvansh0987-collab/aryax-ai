@@ -492,6 +492,59 @@ def clear():
 def health():
     return jsonify({'status': 'ok', 'sessions': len(sessions)})
 
+@app.post('/api/admin')
+def get_admin_stats():
+    data = request.json
+    password = data.get('password', '')
+    if password != 'aryax2055':  # Secret admin password
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    db = load_db()
+    users = db.get('users', {})
+    
+    total_users = len(users)
+    total_chats = sum(u.get('total_chats', 0) for u in users.values())
+    
+    # Calculate revenue (mock logic based on plans)
+    pro_users = sum(1 for u in users.values() if u.get('plan') == 'pro')
+    ultra_users = sum(1 for u in users.values() if u.get('plan') == 'ultra')
+    monthly_revenue = (pro_users * 99) + (ultra_users * 299)
+    
+    user_list = []
+    for uname, udata in users.items():
+        user_list.append({
+            'username': uname,
+            'plan': udata.get('plan', 'free'),
+            'chats': udata.get('total_chats', 0),
+            'created': udata.get('created', 'N/A')[:10]
+        })
+        
+    return jsonify({
+        'total_users': total_users,
+        'total_chats': total_chats,
+        'monthly_revenue': monthly_revenue,
+        'pro_users': pro_users,
+        'ultra_users': ultra_users,
+        'recent_users': sorted(user_list, key=lambda x: x['created'], reverse=True)[:50]
+    })
+
+@app.post('/api/upgrade')
+def upgrade_plan():
+    """Endpoint for Razorpay to verify payment and upgrade user"""
+    data = request.json
+    username = data.get('username')
+    plan = data.get('plan') # 'pro' or 'ultra'
+    
+    # In real app, verify Razorpay signature here!
+    
+    db = load_db()
+    if username in db['users']:
+        db['users'][username]['plan'] = plan
+        db['users'][username]['credits'] = 20000 if plan == 'pro' else 9999999
+        save_db(db)
+        return jsonify({'ok': True, 'plan': plan})
+    return jsonify({'error': 'User not found'}), 404
+
 
 if __name__ == '__main__':
     # Initialize db

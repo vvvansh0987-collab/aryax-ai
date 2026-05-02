@@ -13,7 +13,7 @@ const authOverlay = $("authOverlay"), mainApp = $("mainApp");
 const loginForm = $("loginForm"), signupForm = $("signupForm");
 const tabLogin = $("tabLogin"), tabSignup = $("tabSignup");
 const logoutBtn = $("logoutBtn");
-const ttsToggle = $("ttsToggle"), exportBtn = $("exportChat");
+const ttsToggle = $("ttsToggle"), exportBtn = $("exportChat"), shareChatBtn = $("shareChat");
 const personaSelect = $("personaSelect"), fileUpload = $("fileUpload");
 const upgradeBtn = $("upgradeBtn"), pricingOverlay = $("pricingOverlay");
 const pricingClose = $("pricingClose"), userPlan = $("userPlan");
@@ -541,7 +541,6 @@ fileUpload?.addEventListener("change",async e=>{
   input.focus();
 });
 
-// ===== EXPORT CHAT =====
 function exportChatToFile(){
   if(chatHistory.length===0){alert("No chat to export!");return}
   let text="=== AryaX AI Chat Export ===\nDate: "+new Date().toLocaleString()+"\n\n";
@@ -555,6 +554,25 @@ function exportChatToFile(){
   a.click();URL.revokeObjectURL(a.href);
 }
 exportBtn?.addEventListener("click",exportChatToFile);
+
+// ===== SHARE APP =====
+shareChatBtn?.addEventListener("click", async () => {
+  const shareData = {
+    title: 'AryaX AI',
+    text: 'Hey! I am using AryaX AI, it is much better and faster than ChatGPT/Manus. Try it out for free!',
+    url: window.location.href
+  };
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+      alert("Share link copied to clipboard! Share it with your circle.");
+    }
+  } catch (err) {
+    console.error('Error sharing:', err);
+  }
+});
 
 // ===== CHAT HISTORY SAVE/LOAD =====
 function saveChatToHistory(title){

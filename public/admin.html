@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AryaX - Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06060b; --surface: #0c0c14; --card: #14142a; --border: #1e1e3a;
+      --primary: #7c3aed; --accent: #3b82f6; --text: #e8eaf0; --text-muted: #8b92b2;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { font-size: 32px; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 30px; text-align: center; }
+    
+    #loginBox { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 30px; max-width: 400px; margin: 100px auto; text-align: center; }
+    #loginBox input { width: 100%; padding: 12px; margin: 15px 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); outline: none; }
+    #loginBox button { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary), var(--accent)); border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
+    
+    #dashboard { display: none; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .stat-card h3 { color: var(--text-muted); font-size: 14px; margin-bottom: 10px; }
+    .stat-card .val { font-size: 36px; font-weight: 800; color: #fff; }
+    .stat-card .val.money { color: var(--success); }
+    
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; }
+    th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--card); color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge.free { background: rgba(139, 146, 178, 0.2); color: var(--text-muted); }
+    .badge.pro { background: rgba(124, 58, 237, 0.2); color: var(--primary); }
+    .badge.ultra { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div id="loginBox">
+    <h2>Admin Access</h2>
+    <input type="password" id="adminPass" placeholder="Enter Admin Password">
+    <button id="loginBtn">Login to Dashboard</button>
+  </div>
+
+  <div id="dashboard">
+    <h1>👑 AryaX Admin Dashboard</h1>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Users</h3>
+        <div class="val" id="valUsers">-</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Chats</h3>
+        <div class="val" id="valChats">-</div>
+      </div>
+      <div class="stat-card">
+        <h3>Monthly Revenue (Est.)</h3>
+        <div class="val money">₹<span id="valRevenue">-</span></div>
+      </div>
+      <div class="stat-card">
+        <h3>Paid Subscribers</h3>
+        <div class="val" id="valSubs">-</div>
+      </div>
+    </div>
+
+    <h2 style="margin-bottom: 15px;">Recent Users</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Plan</th>
+          <th>Chats</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody">
+        <!-- JS fills this -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const loginBox = document.getElementById('loginBox');
+  const dashboard = document.getElementById('dashboard');
+  const passInput = document.getElementById('adminPass');
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const pwd = passInput.value;
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwd })
+      });
+      const data = await res.json();
+      
+      if (data.error) {
+        alert('Wrong password!');
+        return;
+      }
+      
+      loginBox.style.display = 'none';
+      dashboard.style.display = 'block';
+      
+      document.getElementById('valUsers').textContent = data.total_users;
+      document.getElementById('valChats').textContent = data.total_chats;
+      document.getElementById('valRevenue').textContent = data.monthly_revenue;
+      document.getElementById('valSubs').textContent = data.pro_users + data.ultra_users;
+      
+      const tbody = document.getElementById('userTableBody');
+      tbody.innerHTML = '';
+      data.recent_users.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${u.username}</strong></td>
+          <td><span class="badge ${u.plan}">${u.plan.toUpperCase()}</span></td>
+          <td>${u.chats}</td>
+          <td>${u.created}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+    } catch (e) {
+      alert('Error connecting to server');
+    }
+  });
+</script>
+</body>
+</html>
