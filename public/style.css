@@ -5,16 +5,11 @@
   --card: #1a1a1a;
   --border: #333333;
   --primary: #ffffff;
-  --primary-light: #f0f0f0;
-  --accent: #ffffff;
-  --accent2: #ffffff;
+  --primary-text: #000000;
   --text: #ffffff;
   --text-muted: #999999;
   --user-bg: #222222;
   --bot-bg: rgba(20, 20, 20, 0.8);
-  --success: #ffffff;
-  --error: #ff4444;
-  --warning: #ffffff;
   --sidebar-w: 240px;
   --radius: 12px;
   --radius-sm: 6px;
@@ -22,9 +17,11 @@
 [data-theme="light"] {
   --bg: #ffffff; 
   --surface: #ffffff; 
-  --card: #f9f9f9; 
-  --border: #e2e2e2;
-  --text: #111111; 
+  --card: #f5f5f5; 
+  --border: #e0e0e0;
+  --primary: #000000;
+  --primary-text: #ffffff;
+  --text: #000000; 
   --text-muted: #666666; 
   --user-bg: #f0f0f0; 
   --bot-bg: #ffffff;
@@ -49,13 +46,13 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .auth-sub{font-size:14px;color:var(--text-muted);margin-bottom:30px}
 .auth-tabs{display:flex;gap:4px;background:var(--card);border-radius:10px;padding:4px;margin-bottom:20px}
 .auth-tab{flex:1;padding:8px;border:none;background:transparent;color:var(--text-muted);font-size:14px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
-.auth-tab.active{background:var(--primary);color:#fff}
+.auth-tab.active{background:var(--primary);color:var(--primary-text)}
 .auth-field{text-align:left;margin-bottom:14px}
 .auth-field label{font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:4px;display:block}
 .auth-field input{width:100%;padding:11px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border .2s}
 .auth-field input:focus{border-color:var(--primary)}
 .auth-error{color:var(--error);font-size:13px;margin-bottom:10px;min-height:18px}
-.auth-submit{width:100%;padding:14px;background:#000;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.auth-submit{width:100%;padding:14px;background:var(--primary);color:var(--primary-text);border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
 .auth-submit:hover{background:#333}
 .auth-footer{font-size:11px;color:var(--text-muted);margin-top:18px;opacity:.6}
 
@@ -71,7 +68,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .logo-text{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
 .icon-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;transition:all .2s}
 .icon-btn:hover{background:var(--border);color:var(--text)}
-.new-chat-btn{margin:16px;padding:12px;background:#000;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.new-chat-btn{margin:16px;padding:12px;background:var(--primary);color:var(--primary-text);border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
 .new-chat-btn:hover{background:#333}
 .section-label{padding:8px 14px 2px;font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.1em}
 
