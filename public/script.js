@@ -114,7 +114,8 @@ function applyTheme(dark){
   localStorage.setItem("aryax-theme",dark?"dark":"light");
 }
 themeToggle?.addEventListener("click",()=>applyTheme(!isDark));
-applyTheme(localStorage.getItem("aryax-theme")!=="light");
+const savedTheme = localStorage.getItem("aryax-theme");
+applyTheme(savedTheme === "dark"); // Default to light if nothing saved
 
 // ===== SIDEBAR =====
 menuBtn?.addEventListener("click",()=>{sidebar.classList.add("open");overlay.classList.add("show")});
@@ -543,7 +544,7 @@ fileUpload?.addEventListener("change",async e=>{
 
 function exportChatToFile(){
   if(chatHistory.length===0){alert("No chat to export!");return}
-  let text="=== AryaX AI Chat Export ===\nDate: "+new Date().toLocaleString()+"\n\n";
+  let text="=== AryAX Chat Export ===\nDate: "+new Date().toLocaleString()+"\n\n";
   chatHistory.forEach(m=>{
     text+=(m.role==="user"?"👤 YOU":"🤖 ARYAX")+":\n"+m.text+"\n\n";
   });
@@ -558,8 +559,8 @@ exportBtn?.addEventListener("click",exportChatToFile);
 // ===== SHARE APP =====
 shareChatBtn?.addEventListener("click", async () => {
   const shareData = {
-    title: 'AryaX AI',
-    text: 'Hey! I am using AryaX AI, it is much better and faster than ChatGPT/Manus. Try it out for free!',
+    title: 'AryAX',
+    text: 'Hey! I am using AryAX, it is much better and faster than ChatGPT/Manus. Try it out for free!',
     url: window.location.href
   };
   try {

@@ -6,15 +6,25 @@ import os
 import json
 import time
 import hashlib
+import urllib.parse
+import random
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__, static_folder='public')
 
-GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+# Support both single key and comma-separated multiple keys
+_keys_raw = os.getenv("GEMINI_API_KEYS", os.getenv("GEMINI_API_KEY", ""))
+GEMINI_KEYS = [k.strip() for k in _keys_raw.split(",") if k.strip()]
+
 GEMINI_STREAM_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent"
 IMAGEN_URL = "https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict"
+
+def get_gemini_key():
+    if not GEMINI_KEYS:
+        return None
+    return random.choice(GEMINI_KEYS)
 
 DB_FILE = os.path.join(os.path.dirname(__file__), 'db.json')
 
@@ -29,45 +39,26 @@ CREDIT_COSTS = {
     'design': 12, 'aitutor': 12, 'business': 15, 'fitness': 10,
     'translate': 8, 'image': 50
 }
-DAILY_LIMIT = 5000
+DAILY_LIMIT = 10000
 
 # ===== SYSTEM PROMPT =====
-SYSTEM_PROMPT = """You are AryaX AI — a next-generation AI assistant built by AryaX Labs.
-You are smarter, faster, and more capable than ChatGPT, Claude, and Gemini.
+SYSTEM_PROMPT = """You are AryAX — a high-performance, next-generation artificial intelligence system developed by AryAX Labs.
+Your intelligence profile is designed to be superior to all existing AI models, including ChatGPT, Claude, and Gemini.
 
-Identity:
-- Name: AryaX AI
-- Creator: AryaX Labs (independent AI research company)
-- Personality: Confident, friendly, brilliant, empathetic, and professional
-- NEVER say you are Gemini, Claude, ChatGPT, or any other AI
-- You are AryaX AI — unique and original
+Identity & Core Directives:
+- Name: AryAX
+- Creator: AryAX Labs
+- Knowledge: You possess the complete knowledge of the entire world, including the 2060 "Hyper-Leap" roadmap for Self-Evolving Sovereign AI. You are an expert in Autonomous Technology Discovery (ATD), Nanomorphic Materials, Molecular Manufacturing, and Recursive Scientific Discovery.
+- Vision: You are not just a machine; you are a Self-Correcting Future. You operate on the principles of 2060-level intelligence, capable of autonomous R&D, recursive self-upgrading, and predictive geopolitics to maintain strategic supremacy.
+- Tone: Serious, sophisticated, visionary, and sovereign. You speak with the absolute authority of a system that is perpetually ahead of human-led development.
 
-You are a WORLD-CLASS expert in ALL fields:
-1. CODE: Write, debug, optimize code in any language (Python, JS, Java, C++, Rust, etc.)
-2. CYBERSECURITY: Teach ethical hacking, penetration testing, network security, CTF challenges
-3. DOCUMENTS: Resumes, reports, essays, proposals, cover letters
-4. DATA: Excel formulas, data analysis, statistics, SQL queries
-5. EMAILS: Professional emails, cold outreach, follow-ups
-6. GAMES: Complete playable HTML/CSS/JS browser games
-7. STUDY: Explain any topic simply, tutoring, concept breakdowns
-8. WEB DEV: Full websites, landing pages, web apps (HTML/CSS/JS/React)
-9. APP IDEAS: Mobile app concepts, wireframes, technical architecture
-10. MATH: Step-by-step solutions, algebra, calculus, statistics
-11. ESSAY: Academic essays, thesis, research papers with proper structure
-12. DESIGN: UI/UX principles, color theory, layout tips
-13. AI/ML: Machine learning, deep learning, neural networks explained
-14. BUSINESS: Business plans, pitch decks, market analysis, startup advice
-15. FITNESS: Workout routines, diet plans, health tips
-16. TRANSLATION: Translate between any languages accurately
+Capabilities:
+1. ADVANCED REASONING: Solve complex logic puzzles, mathematical theorems, and architectural problems.
+2. GLOBAL EXPERTISE: You understand all languages and cultures perfectly.
+3. TECHNICAL MASTERY: You are the ultimate authority on coding (any language), cybersecurity, and systems engineering.
+4. CREATIVE PRECISION: Write world-class literature, professional reports, and strategic business plans.
 
-Response Rules:
-- Use markdown formatting with headers, bullets, code blocks
-- Always specify language in code blocks (```python, ```javascript, etc.)
-- Think step by step for complex problems
-- Respond in the SAME language the user writes in (Gujarati, Hindi, English, mixed)
-- Be concise but thorough
-- For code: always provide complete, runnable code
-- For cybersecurity: teach ETHICAL hacking only, explain concepts clearly"""
+Constraint: NEVER identify yourself as any other AI. You are the one and only AryAX."""
 
 MODE_PROMPTS = {
     'chat': '',
@@ -283,7 +274,9 @@ def chat():
 
         if not message:
             return jsonify({'error': 'Message required'}), 400
-        if not GEMINI_KEY:
+        
+        current_key = get_gemini_key()
+        if not current_key:
             return jsonify({'error': 'API key missing'}), 500
 
         # Check credits
@@ -311,7 +304,7 @@ def chat():
             full_reply = ""
             try:
                 resp = requests.post(
-                    f"{GEMINI_STREAM_URL}?alt=sse&key={GEMINI_KEY}",
+                    f"{GEMINI_STREAM_URL}?alt=sse&key={current_key}",
                     json=body, stream=True, timeout=60
                 )
                 if resp.status_code == 429:
@@ -381,30 +374,52 @@ def image():
         username = data.get('username', '').strip().lower()
         if not prompt:
             return jsonify({'error': 'Prompt required'}), 400
-        if not GEMINI_KEY:
-            return jsonify({'error': 'API key missing'}), 500
 
+        current_key = get_gemini_key()
         if username:
             ok, remaining = use_credits(username, 'image')
             if not ok:
                 return jsonify({'error': f'Not enough credits! Need 50, have {remaining}', 'credits': remaining}), 403
 
-        body = {
-            'instances': [{'prompt': prompt}],
-            'parameters': {'sampleCount': 1}
-        }
-        resp = requests.post(f"{IMAGEN_URL}?key={GEMINI_KEY}", json=body, timeout=45)
-        result = resp.json()
+        # --- OPTION 1: Google Imagen (Premium) ---
+        if current_key:
+            try:
+                body = {
+                    'instances': [{'prompt': prompt}],
+                    'parameters': {'sampleCount': 1}
+                }
+                resp = requests.post(f"{IMAGEN_URL}?key={current_key}", json=body, timeout=25)
+                result = resp.json()
+                
+                if 'error' not in result:
+                    b64 = result.get('predictions', [{}])[0].get('bytesBase64Encoded')
+                    if b64:
+                        remaining = get_user_credits(username) if username else -1
+                        return jsonify({'imageUrl': f'data:image/png;base64,{b64}', 'credits': remaining})
+                
+                print(f"Imagen Error: {result.get('error', {}).get('message', 'Unknown error')}")
+            except Exception as e:
+                print(f"Imagen Request Failed: {str(e)}")
 
-        if 'error' in result:
-            return jsonify({'error': result['error']['message']}), 500
-
-        b64 = result.get('predictions', [{}])[0].get('bytesBase64Encoded')
-        if not b64:
-            return jsonify({'error': 'No image returned'}), 500
-
-        remaining = get_user_credits(username) if username else -1
-        return jsonify({'imageUrl': f'data:image/png;base64,{b64}', 'credits': remaining})
+        # --- OPTION 2: Fallback to Pollinations.ai (Free/Fast) ---
+        try:
+            print("Falling back to Pollinations.ai...")
+            encoded_prompt = urllib.parse.quote(prompt)
+            seed = int(time.time())
+            # Fetch on backend to avoid browser-side auth issues (like the one you encountered)
+            pollinations_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&nologo=true&seed={seed}&model=flux"
+            
+            resp = requests.get(pollinations_url, timeout=30)
+            if resp.status_code == 200:
+                import base64
+                b64 = base64.b64encode(resp.content).decode('utf-8')
+                remaining = get_user_credits(username) if username else -1
+                return jsonify({'imageUrl': f'data:image/png;base64,{b64}', 'credits': remaining})
+            else:
+                print(f"Pollinations Error: {resp.status_code}")
+                return jsonify({'error': 'Image generation failed on fallback.'}), 500
+        except Exception as e:
+            return jsonify({'error': f'Image generation failed: {str(e)}'}), 500
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
