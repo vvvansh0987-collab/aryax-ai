@@ -15,6 +15,8 @@ const tabLogin = $("tabLogin"), tabSignup = $("tabSignup");
 const logoutBtn = $("logoutBtn");
 const ttsToggle = $("ttsToggle"), exportBtn = $("exportChat");
 const personaSelect = $("personaSelect"), fileUpload = $("fileUpload");
+const upgradeBtn = $("upgradeBtn"), pricingOverlay = $("pricingOverlay");
+const pricingClose = $("pricingClose"), userPlan = $("userPlan");
 
 // ===== STATE =====
 let sessionId = uid(), isTyping = false, currentMode = "chat";
@@ -608,3 +610,45 @@ document.addEventListener("keydown",e=>{
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
+
+// ===== PAYMENT (RAZORPAY) =====
+upgradeBtn?.addEventListener("click", () => {
+  pricingOverlay.style.display = "flex";
+});
+pricingClose?.addEventListener("click", () => {
+  pricingOverlay.style.display = "none";
+});
+
+document.querySelectorAll(".plan-btn").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    if(btn.disabled) return;
+    const plan = btn.getAttribute("data-plan");
+    const amount = btn.getAttribute("data-amount");
+    if(!plan || !amount) return;
+
+    // Test Razorpay Integration
+    const options = {
+      key: "rzp_test_YOUR_KEY_HERE", // Replace with real key in production
+      amount: amount, 
+      currency: "INR",
+      name: "AryaX AI",
+      description: plan === "pro" ? "Pro Plan Subscription" : "Ultra Plan Subscription",
+      image: "https://aryax-ai.onrender.com/favicon.ico",
+      handler: function (response) {
+        // Success Handler
+        alert("Payment Successful! Welcome to " + (plan === "pro" ? "Pro" : "Ultra") + " Plan.");
+        pricingOverlay.style.display = "none";
+        userPlan.textContent = plan === "pro" ? "⚡ Pro Plan" : "💎 Ultra Plan";
+        creditCount.textContent = plan === "pro" ? "20000" : "∞";
+        // Optionally update backend via fetch here
+      },
+      prefill: {
+        name: currentUser || "User",
+        email: currentUser ? currentUser + "@example.com" : "",
+      },
+      theme: { color: "#7c3aed" }
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  });
+});
