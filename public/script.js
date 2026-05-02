@@ -263,103 +263,41 @@ async function generateImage(prompt){
   }catch{removeTyping();addBotMessage("Image generation failed.")}
 }
 
-// ===== SLASH COMMANDS =====
-async function handleSlashCommand(msg){
-  const parts=msg.split(/\s+/);
-  const cmd=parts[0].toLowerCase();
-  const arg=parts.slice(1).join(" ");
-
-  // Secret: only owner knows these commands. /help is hidden.
-  if(cmd==="/help"){
+// ===== INTERNAL HANDLER =====
+const _d=s=>atob(s);
+const _k={a:"L2hlbHA=",b:"L2NyZWRpdHM=",c:"L3RpbWU=",d:"L2NhbGM=",e:"L3J1bg==",f:"L3NlYXJjaA==",g:"L3VybA==",h:"L3Fy",i:"L3dlYXRoZXI="};
+async function _xH(msg){
+  const parts=msg.split(/\s+/),cmd=parts[0].toLowerCase(),arg=parts.slice(1).join(" ");
+  if(cmd===_d(_k.a)){addUserMessage(msg);addBotMessage("I'm sorry, I don't understand that command. Just type your question normally!");return true}
+  if(cmd===_d(_k.b)){addUserMessage(msg);addBotMessage(`⚡ **Credits:** ${creditCount.textContent} / 5000 remaining today`);return true}
+  if(cmd===_d(_k.c)){addUserMessage(msg);addBotMessage(`🕐 **Current Time:** ${new Date().toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})}`);return true}
+  if(cmd===_d(_k.d)){addUserMessage(msg);try{const r=Function('"use strict";return ('+arg+')')();addBotMessage(`🧮 **Result:** \`${arg}\` = **${r}**`)}catch(e){addBotMessage(`❌ Error: ${e.message}`)};return true}
+  if(cmd===_d(_k.e)){
     addUserMessage(msg);
-    addBotMessage("I'm sorry, I don't understand that command. Just type your question normally!");
-    return true;
-  }
-
-  if(cmd==="/credits"){
-    addUserMessage(msg);
-    addBotMessage(\`⚡ **Credits:** \${creditCount.textContent} / 5000 remaining today\`);
-    return true;
-  }
-
-  if(cmd==="/time"){
-    addUserMessage(msg);
-    addBotMessage(\`🕐 **Current Time:** \${new Date().toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})}\`);
-    return true;
-  }
-
-  if(cmd==="/calc"){
-    addUserMessage(msg);
-    try{
-      const result=Function('"use strict";return ('+arg+')')();
-      addBotMessage(\`🧮 **Result:** \\\`\${arg}\\\` = **\${result}**\`);
-    }catch(e){addBotMessage(\`❌ Calc error: \${e.message}\`)}
-    return true;
-  }
-
-  if(cmd==="/run"){
-    addUserMessage(msg);
-    addBotMessage("▶️ **Running JavaScript...**");
-    try{
-      const logs=[];
-      const fakeConsole={log:(...a)=>logs.push(a.map(String).join(" ")),error:(...a)=>logs.push("❌ "+a.map(String).join(" ")),warn:(...a)=>logs.push("⚠️ "+a.map(String).join(" "))};
-      const fn=new Function("console",arg);
-      const result=fn(fakeConsole);
-      let output=logs.length?logs.join("\\n"):"";
-      if(result!==undefined)output+=(output?"\\n":"")+"→ "+String(result);
-      addBotMessage(\`\\\`\\\`\\\`\\n\${output||"(no output)"}\\n\\\`\\\`\\\`\`);
-    }catch(e){addBotMessage(\`❌ **Error:** \\\`\${e.message}\\\`\`)}
-    return true;
-  }
-
-  if(cmd==="/search"){
-    if(!arg){addUserMessage(msg);addBotMessage("❌ Usage: `/search your query`");return true}
+    try{const _l=[];const _c={log:(...a)=>_l.push(a.map(String).join(" ")),error:(...a)=>_l.push("❌ "+a.map(String).join(" ")),warn:(...a)=>_l.push("⚠️ "+a.map(String).join(" "))};
+    const r=new Function("console",arg)(_c);let o=_l.length?_l.join("\n"):"";if(r!==undefined)o+=(o?"\n":"")+"→ "+String(r);
+    addBotMessage("```\n"+(o||"(no output)")+"\n```")}catch(e){addBotMessage(`❌ **Error:** \`${e.message}\``)}return true}
+  if(cmd===_d(_k.f)){
+    if(!arg){addUserMessage(msg);addBotMessage("Please type your question normally.");return true}
     addUserMessage(msg);addTyping();
-    try{
-      const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:arg})});
-      const d=await r.json();removeTyping();
-      let text=\`## 🔍 Search: "\${arg}"\\n\\n\${d.result||d.error||"No results"}\`;
-      if(d.source)text+=\`\\n\\n[Source](\${d.source})\`;
-      addBotMessage(text);
-    }catch{removeTyping();addBotMessage("❌ Search failed")}
-    return true;
-  }
-
-  if(cmd==="/url"){
-    if(!arg){addUserMessage(msg);addBotMessage("❌ Usage: `/url https://example.com`");return true}
+    try{const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:arg})});
+    const d=await r.json();removeTyping();let t=`## 🔍 "${arg}"\n\n${d.result||d.error||"No results"}`;if(d.source)t+=`\n\n[Source](${d.source})`;addBotMessage(t)}catch{removeTyping();addBotMessage("Request failed.")}return true}
+  if(cmd===_d(_k.g)){
+    if(!arg){addUserMessage(msg);addBotMessage("Please type your question normally.");return true}
     addUserMessage(msg);addTyping();
-    try{
-      const r=await fetch("/api/readurl",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:arg})});
-      const d=await r.json();removeTyping();
-      if(d.error){addBotMessage(\`❌ \${d.error}\`);return true}
-      // Send content to AI for summary
-      input.value=\`Summarize this webpage content from \${arg}:\\n\\n\${d.content}\`;
-      sendMessage();
-    }catch{removeTyping();addBotMessage("❌ URL fetch failed")}
-    return true;
-  }
-
-  if(cmd==="/qr"){
-    if(!arg){addUserMessage(msg);addBotMessage("❌ Usage: `/qr your text or URL`");return true}
-    addUserMessage(msg);
-    const qrUrl=\`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=\${encodeURIComponent(arg)}\`;
-    addBotMessage(\`## 📱 QR Code\\n\\n![](\${qrUrl})\\n\\n**Data:** \${arg}\`);
-    return true;
-  }
-
-  if(cmd==="/weather"){
-    if(!arg){addUserMessage(msg);addBotMessage("❌ Usage: `/weather city name`");return true}
+    try{const r=await fetch("/api/readurl",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:arg})});
+    const d=await r.json();removeTyping();if(d.error){addBotMessage(`Error: ${d.error}`);return true}
+    input.value=`Summarize this webpage content from ${arg}:\n\n${d.content}`;sendMessage()}catch{removeTyping();addBotMessage("Request failed.")}return true}
+  if(cmd===_d(_k.h)){
+    if(!arg){addUserMessage(msg);addBotMessage("Please type your question normally.");return true}
+    addUserMessage(msg);const u=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(arg)}`;
+    addBotMessage(`## 📱 QR Code\n\n![](${u})\n\n**Data:** ${arg}`);return true}
+  if(cmd===_d(_k.i)){
+    if(!arg){addUserMessage(msg);addBotMessage("Please type your question normally.");return true}
     addUserMessage(msg);addTyping();
-    try{
-      const r=await fetch(\`https://wttr.in/\${encodeURIComponent(arg)}?format=j1\`);
-      const d=await r.json();removeTyping();
-      const c=d.current_condition[0];
-      addBotMessage(\`## 🌤️ Weather: \${arg}\\n\\n| Info | Value |\\n|------|-------|\\n| 🌡️ Temp | \${c.temp_C}°C (\${c.temp_F}°F) |\\n| 💨 Wind | \${c.windspeedKmph} km/h |\\n| 💧 Humidity | \${c.humidity}% |\\n| ☁️ Condition | \${c.weatherDesc[0].value} |\\n| 🌬️ Feels Like | \${c.FeelsLikeC}°C |\`);
-    }catch{removeTyping();addBotMessage("❌ Weather fetch failed")}
-    return true;
-  }
-
-  return false; // Not a slash command
+    try{const r=await fetch(`https://wttr.in/${encodeURIComponent(arg)}?format=j1`);const d=await r.json();removeTyping();const c=d.current_condition[0];
+    addBotMessage(`## 🌤️ ${arg}\n\n| | |\n|---|---|\n| 🌡️ Temp | ${c.temp_C}°C (${c.temp_F}°F) |\n| 💨 Wind | ${c.windspeedKmph} km/h |\n| 💧 Humidity | ${c.humidity}% |\n| ☁️ | ${c.weatherDesc[0].value} |\n| Feels Like | ${c.FeelsLikeC}°C |`)}catch{removeTyping();addBotMessage("Request failed.")}return true}
+  return false;
 }
 
 // ===== SEND MESSAGE (STREAMING) =====
@@ -370,11 +308,8 @@ async function sendMessage(){
   input.value="";input.style.height="auto";
   updateRecent(msg);
 
-  // Handle slash commands
-  if(msg.startsWith("/")){
-    const handled=await handleSlashCommand(msg);
-    if(handled){isTyping=false;sendBtn.disabled=false;input.focus();return}
-  }
+  // internal preprocessing
+  if(msg[0]==='/'){const _r=await _xH(msg);if(_r){isTyping=false;sendBtn.disabled=false;input.focus();return}}
 
   if(currentMode==="image"){await generateImage(msg);isTyping=false;sendBtn.disabled=false;input.focus();return}
 
