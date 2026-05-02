@@ -274,10 +274,25 @@
         <button class="plan-btn ultra" data-plan="ultra" data-amount="29900">Get Ultra</button>
       </div>
     </div>
+    <div class="upi-screen" id="upiScreen" style="display:none; text-align:center;">
+      <h3 style="margin-bottom:10px; color:var(--text);">Pay via UPI</h3>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">Scan QR to pay <strong id="upiAmountText">₹0</strong> for <strong id="upiPlanText">Plan</strong></p>
+      
+      <div style="background:#fff; padding:15px; border-radius:12px; display:inline-block; margin-bottom:20px;">
+        <img id="upiQR" src="" alt="UPI QR Code" style="width:180px; height:180px;">
+      </div>
+      
+      <p style="font-size:12px; color:var(--primary-light); margin-bottom:10px;">UPI ID: <strong>9510225996@fam</strong></p>
+      
+      <div style="text-align:left; max-width:250px; margin:0 auto;">
+        <label style="font-size:12px; color:var(--text-muted);">Enter 12-digit UTR No. after payment:</label>
+        <input type="text" id="upiUtr" placeholder="e.g. 312345678901" style="width:100%; padding:10px; margin-top:5px; margin-bottom:15px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); outline:none;">
+        <button id="verifyUpiBtn" style="width:100%; padding:10px; background:var(--primary); color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Verify Payment</button>
+      </div>
+      <button id="backToPlans" style="margin-top:20px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:12px;">← Back to Plans</button>
+    </div>
   </div>
 </div>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

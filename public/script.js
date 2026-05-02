@@ -629,44 +629,75 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 
-// ===== PAYMENT (RAZORPAY) =====
+// ===== PAYMENT (DIRECT UPI) =====
 upgradeBtn?.addEventListener("click", () => {
   pricingOverlay.style.display = "flex";
+  document.querySelector('.plans-grid').style.display = 'grid';
+  $('upiScreen').style.display = 'none';
 });
 pricingClose?.addEventListener("click", () => {
   pricingOverlay.style.display = "none";
 });
+$('backToPlans')?.addEventListener("click", () => {
+  document.querySelector('.plans-grid').style.display = 'grid';
+  $('upiScreen').style.display = 'none';
+});
+
+let selectedPlan = "";
 
 document.querySelectorAll(".plan-btn").forEach(btn => {
   btn.addEventListener("click", (e) => {
     if(btn.disabled) return;
     const plan = btn.getAttribute("data-plan");
-    const amount = btn.getAttribute("data-amount");
+    const amount = btn.getAttribute("data-amount"); // in paise
     if(!plan || !amount) return;
 
-    // Test Razorpay Integration
-    const options = {
-      key: "rzp_test_YOUR_KEY_HERE", // Replace with real key in production
-      amount: amount, 
-      currency: "INR",
-      name: "AryaX AI",
-      description: plan === "pro" ? "Pro Plan Subscription" : "Ultra Plan Subscription",
-      image: "https://aryax-ai.onrender.com/favicon.ico",
-      handler: function (response) {
-        // Success Handler
-        alert("Payment Successful! Welcome to " + (plan === "pro" ? "Pro" : "Ultra") + " Plan.");
-        pricingOverlay.style.display = "none";
-        userPlan.textContent = plan === "pro" ? "⚡ Pro Plan" : "💎 Ultra Plan";
-        creditCount.textContent = plan === "pro" ? "20000" : "∞";
-        // Optionally update backend via fetch here
-      },
-      prefill: {
-        name: currentUser || "User",
-        email: currentUser ? currentUser + "@example.com" : "",
-      },
-      theme: { color: "#7c3aed" }
-    };
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+    selectedPlan = plan;
+    const amountRupees = amount / 100;
+    
+    // Setup UPI Screen
+    document.querySelector('.plans-grid').style.display = 'none';
+    $('upiScreen').style.display = 'block';
+    $('upiAmountText').textContent = "₹" + amountRupees;
+    $('upiPlanText').textContent = plan === 'pro' ? 'Pro Plan' : 'Ultra Plan';
+    
+    // Generate UPI URI
+    const upiId = "9510225996@fam";
+    const upiUri = `upi://pay?pa=${upiId}&pn=AryaX%20AI&am=${amountRupees}.00&cu=INR`;
+    $('upiQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUri)}`;
   });
+});
+
+$('verifyUpiBtn')?.addEventListener("click", async () => {
+  const utr = $('upiUtr').value.trim();
+  if(utr.length < 12) {
+    alert("Please enter a valid 12-digit UTR number.");
+    return;
+  }
+  
+  $('verifyUpiBtn').textContent = "Verifying...";
+  $('verifyUpiBtn').disabled = true;
+  
+  try {
+    const res = await fetch('/api/upgrade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: currentUser, plan: selectedPlan, utr: utr })
+    });
+    const data = await res.json();
+    
+    if(data.ok) {
+      alert("Payment Verified! Welcome to the " + (selectedPlan === "pro" ? "Pro" : "Ultra") + " Plan.");
+      pricingOverlay.style.display = "none";
+      userPlan.textContent = selectedPlan === "pro" ? "⚡ Pro Plan" : "💎 Ultra Plan";
+      creditCount.textContent = selectedPlan === "pro" ? "20000" : "∞";
+    } else {
+      alert("Error: " + (data.error || "Verification failed"));
+    }
+  } catch(e) {
+    alert("Network error. Please try again.");
+  }
+  
+  $('verifyUpiBtn').textContent = "Verify Payment";
+  $('verifyUpiBtn').disabled = false;
 });

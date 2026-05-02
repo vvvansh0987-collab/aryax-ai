@@ -530,17 +530,23 @@ def get_admin_stats():
 
 @app.post('/api/upgrade')
 def upgrade_plan():
-    """Endpoint for Razorpay to verify payment and upgrade user"""
+    """Endpoint for Direct UPI to verify payment and upgrade user"""
     data = request.json
     username = data.get('username')
     plan = data.get('plan') # 'pro' or 'ultra'
+    utr = data.get('utr', '').strip()
     
-    # In real app, verify Razorpay signature here!
+    if len(utr) < 12:
+        return jsonify({'error': 'Invalid UTR Number'}), 400
     
     db = load_db()
     if username in db['users']:
         db['users'][username]['plan'] = plan
         db['users'][username]['credits'] = 20000 if plan == 'pro' else 9999999
+        # Save UTR for admin verification later
+        utr_list = db['users'][username].get('utr_list', [])
+        utr_list.append({'utr': utr, 'plan': plan, 'date': str(datetime.now())})
+        db['users'][username]['utr_list'] = utr_list
         save_db(db)
         return jsonify({'ok': True, 'plan': plan})
     return jsonify({'error': 'User not found'}), 404
