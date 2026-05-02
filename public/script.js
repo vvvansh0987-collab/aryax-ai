@@ -135,7 +135,35 @@ overlay?.addEventListener("click",closeSide);
 closeSidebarBtn?.addEventListener("click",closeSide);
 function closeSide(){sidebar.classList.remove("open");overlay.classList.remove("show")}
 
-// ===== ARTIFACTS =====
+// ===== ARTIFACTS (Manus High-Speed Engine) =====
+function runArtifact(htmlCode) {
+  artifactSidebar.classList.add("open");
+  const blob = new Blob([htmlCode], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  
+  artifactBody.innerHTML = `
+    <div class="artifact-controls" style="padding: 10px; display: flex; gap: 10px; border-bottom: 1px solid var(--border);">
+      <button class="quick-btn" onclick="window.open('${url}', '_blank')">🚀 Open Full View</button>
+      <button class="quick-btn" onclick="downloadCode()">💾 Download Game</button>
+    </div>
+    <iframe src="${url}" style="width: 100%; height: calc(100% - 50px); border: none;" 
+      sandbox="allow-scripts allow-forms allow-popups allow-modals allow-same-origin"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen>
+    </iframe>
+  `;
+  window.lastArtifactCode = htmlCode;
+}
+
+function downloadCode() {
+  const blob = new Blob([window.lastArtifactCode], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "aryax_game.html";
+  a.click();
+}
+
 function toggleArtifacts(){
   if(!artifactSidebar) return;
   artifactSidebar.classList.toggle("open");

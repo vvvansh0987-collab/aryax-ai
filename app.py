@@ -659,9 +659,10 @@ if __name__ == '__main__':
     # Initialize db
     if not os.path.exists(DB_FILE) or os.path.getsize(DB_FILE) < 5:
         save_db({'users': {}})
-    print("\nAryaX AI Server Started!")
-    print("Open: http://localhost:3000\n")
-    app.run(host='0.0.0.0', port=3000, debug=False)
+    port = int(os.environ.get('PORT', 3000))
+    print(f"\nAryaX AI Production Server Starting on Port {port}...")
+    app.run(host='0.0.0.0', port=port)
+
 @app.route('/api/generate_office', methods=['POST'])
 def generate_office():
     data = request.json

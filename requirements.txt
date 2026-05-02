@@ -1,5 +1,11 @@
 flask
+flask-cors
 python-dotenv
-requests
-pytz
+google-generativeai
+python-pptx
+pandas
+openpyxl
+lxml
 gunicorn
+requests
+pillow
