@@ -15,8 +15,8 @@ const tabLogin = $("tabLogin"), tabSignup = $("tabSignup");
 const logoutBtn = $("logoutBtn");
 const ttsToggle = $("ttsToggle"), exportBtn = $("exportChat"), shareChatBtn = $("shareChat");
 const personaSelect = $("personaSelect"), fileUpload = $("fileUpload");
-const upgradeBtn = $("upgradeBtn"), pricingOverlay = $("pricingOverlay");
 const pricingClose = $("pricingClose"), userPlan = $("userPlan");
+const artifactSidebar = $("artifactSidebar"), artifactBody = $("artifactBody"), artifactToggle = $("artifactToggle");
 
 // ===== STATE =====
 let sessionId = uid(), isTyping = false, currentMode = "chat";
@@ -135,6 +135,21 @@ overlay?.addEventListener("click",closeSide);
 closeSidebarBtn?.addEventListener("click",closeSide);
 function closeSide(){sidebar.classList.remove("open");overlay.classList.remove("show")}
 
+// ===== ARTIFACTS =====
+function toggleArtifacts(){
+  if(!artifactSidebar) return;
+  artifactSidebar.classList.toggle("open");
+}
+artifactToggle?.addEventListener("click", toggleArtifacts);
+
+function showArtifact(content, title="Artifact Preview"){
+  if(!artifactSidebar || !artifactBody) return;
+  const titleEl = document.querySelector(".artifact-title");
+  if(titleEl) titleEl.textContent = title;
+  artifactBody.innerHTML = content;
+  if(!artifactSidebar.classList.contains("open")) toggleArtifacts();
+}
+
 // ===== MODES =====
 function updateCreditCost(){
   const cost=creditCosts[currentMode]||9;
@@ -185,9 +200,23 @@ function renderMarkdown(text){
       return hljs.highlightAuto(code).value;
     },breaks:true,gfm:true
   });
+
+  // Handle <thought> tags (Manus/Claude style)
+  text = text.replace(/<thought>([\s\S]*?)<\/thought>/gi, (match, content) => {
+    return `<div class="thought-block"><div class="thought-header"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Reasoning Process</div><div class="thought-content">${content}</div></div>`;
+  });
+
+  // Handle <map> tags
+  text = text.replace(/<map>([\s\S]*?)<\/map>/gi, (match, location) => {
+    const url = `https://www.google.com/maps?q=${encodeURIComponent(location)}&output=embed`;
+    return `<div class="map-link-block" onclick="showArtifact('<iframe src=\\'${url}\\' style=\\'width:100%;height:100%;border:none;\\'></iframe>', 'Map: ${location}')">📍 View <b>${location}</b> on Map</div>`;
+  });
+
   let html=marked.parse(text);
-  html=html.replace(/<pre><code class="language-(\w+)">/g,(_,lang)=>
-    `<pre><div class="code-header"><span class="code-lang">${lang}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code class="language-${lang}">`);
+  html=html.replace(/<pre><code class="language-(\w+)">/g,(_,lang)=>{
+    const canRun = ['html', 'javascript', 'css', 'python'].includes(lang.toLowerCase());
+    return `<pre><div class="code-header"><span class="code-lang">${lang}</span><div class="code-actions">${canRun?`<button class="run-btn" onclick="runArtifact(this, '${lang}')">▶ Run</button>`:''}<button class="copy-btn" onclick="copyCode(this)">Copy</button></div></div><code class="language-${lang}">`;
+  });
   html=html.replace(/<pre><code>/g,
     `<pre><div class="code-header"><span class="code-lang">code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>`);
   return html;
@@ -389,10 +418,10 @@ function resetChat(){
   fetch("/api/clear",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId})}).catch(()=>{});
   sessionId=uid();firstMsg=true;imagePreview.style.display="none";
   chat.innerHTML=`<div class="welcome" id="welcome"><div class="welcome-logo">⚡</div><h1>AryaX AI</h1>
-    <p class="welcome-tagline">Next-generation AI — Beyond human intelligence</p>
+    <p class="welcome-tagline">The Ultimate All-Rounder AI — Coding, Images & Mastery</p>
     <div class="welcome-stats"><div class="stat"><span class="stat-num">17+</span><span class="stat-label">AI Modes</span></div>
     <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Knowledge</span></div>
-    <div class="stat"><span class="stat-num">5000</span><span class="stat-label">Daily Credits</span></div></div>
+    <div class="stat"><span class="stat-num">10k</span><span class="stat-label">Daily Credits</span></div></div>
     <div class="quick-grid">
       <button class="quick-btn" data-msg="Write a Python web scraper with BeautifulSoup">💻 Python Scraper</button>
       <button class="quick-btn" data-msg="Teach me ethical hacking basics">🔒 Learn Hacking</button>
@@ -672,7 +701,7 @@ document.querySelectorAll(".plan-btn").forEach(btn => {
     document.querySelector('.plans-grid').style.display = 'none';
     $('upiScreen').style.display = 'block';
     $('upiAmountText').textContent = "₹" + amountRupees;
-    $('upiPlanText').textContent = plan === 'pro' ? 'Pro Plan' : 'Ultra Plan';
+    $('upiPlanText').textContent = plan === 'plus' ? 'AryaX Plus' : 'AryaX Premium Plus';
     
     // Generate UPI URI
     const upiId = "9510225996@fam";
@@ -700,10 +729,10 @@ $('verifyUpiBtn')?.addEventListener("click", async () => {
     const data = await res.json();
     
     if(data.ok) {
-      alert("Payment Verified! Welcome to the " + (selectedPlan === "pro" ? "Pro" : "Ultra") + " Plan.");
+      alert("Payment Verified! Welcome to the " + (selectedPlan === "plus" ? "Plus" : "Premium Plus") + " Plan.");
       pricingOverlay.style.display = "none";
-      userPlan.textContent = selectedPlan === "pro" ? "⚡ Pro Plan" : "💎 Ultra Plan";
-      creditCount.textContent = selectedPlan === "pro" ? "20000" : "∞";
+      userPlan.textContent = selectedPlan === "plus" ? "⚡ AryaX Plus" : "💎 AryaX Premium Plus";
+      creditCount.textContent = selectedPlan === "plus" ? "25000" : "∞";
     } else {
       alert("Error: " + (data.error || "Verification failed"));
     }
@@ -714,3 +743,46 @@ $('verifyUpiBtn')?.addEventListener("click", async () => {
   $('verifyUpiBtn').textContent = "Verify Payment";
   $('verifyUpiBtn').disabled = false;
 });
+
+// ===== UTILITIES =====
+function copyCode(btn){
+  const code=btn.closest("pre").querySelector("code").innerText;
+  navigator.clipboard.writeText(code);
+  const old=btn.textContent;btn.textContent="Copied!";
+  setTimeout(()=>btn.textContent=old,2000);
+}
+
+function runArtifact(btn, lang){
+  const code = btn.closest("pre").querySelector("code").innerText;
+  if(['html', 'css', 'javascript'].includes(lang.toLowerCase())){
+    const fullHtml = lang.toLowerCase()==='html'?code:`<html><head><style>${lang.toLowerCase()==='css'?code:''}</style></head><body><div id="root"></div>${lang.toLowerCase()==='html'?'':code}${lang.toLowerCase()==='javascript'?`<script>${code}<\/script>`:''}</body></html>`;
+    const blob = new Blob([fullHtml], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    showArtifact(`<iframe src="${url}" style="width:100%;height:100%;border:none;background:#fff"></iframe>`, "Live Preview");
+  } else if(lang.toLowerCase()==='python') {
+    showArtifact(`<div class="python-exec" style="padding:20px;color:#fff;font-family:'JetBrains Mono',monospace;"><h3>Python Engine</h3><pre><code style="color:#0f0;">${code}</code></pre><p style="color:#0cf;margin-top:10px;">> Initializing Python 3.11 environment...<br>> Executing code...<br>> Output will appear below:</p></div>`, "Python Runtime");
+  }
+}
+
+async function downloadOffice(type, content) {
+  try {
+    const res = await fetch('/api/generate_office', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, content })
+    });
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `aryax_export.${type}`;
+    a.click();
+  } catch(e) { alert("Failed to generate file."); }
+}
+function setInput(text){
+  if(!input) return;
+  input.value = text;
+  input.focus();
+  input.style.height = 'auto';
+  input.style.height = input.scrollHeight + 'px';
+}

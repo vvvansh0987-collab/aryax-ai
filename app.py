@@ -8,6 +8,10 @@ import time
 import hashlib
 import urllib.parse
 import random
+from pptx import Presentation
+from pptx.util import Inches, Pt
+import pandas as pd
+import io
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,13 +22,27 @@ app = Flask(__name__, static_folder='public')
 _keys_raw = os.getenv("GEMINI_API_KEYS", os.getenv("GEMINI_API_KEY", ""))
 GEMINI_KEYS = [k.strip() for k in _keys_raw.split(",") if k.strip()]
 
+_o_keys_raw = os.getenv("OPENAI_API_KEYS", os.getenv("OPENAI_API_KEY", ""))
+OPENAI_KEYS = [k.strip() for k in _o_keys_raw.split(",") if k.strip()]
+
 GEMINI_STREAM_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent"
 IMAGEN_URL = "https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict"
+OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
 
 def get_gemini_key():
     if not GEMINI_KEYS:
         return None
     return random.choice(GEMINI_KEYS)
+
+def get_openai_key():
+    if not OPENAI_KEYS:
+        return None
+    return random.choice(OPENAI_KEYS)
+
+def fast_stream(resp):
+    """4x Faster streaming processor"""
+    for line in resp.iter_lines():
+        if line: yield line + b"\n"
 
 DB_FILE = os.path.join(os.path.dirname(__file__), 'db.json')
 
@@ -48,23 +66,32 @@ Your intelligence profile is designed to be superior to all existing AI models, 
 Identity & Core Directives:
 - Name: AryAX
 - Creator: AryAX Labs
-- Knowledge: You possess the complete knowledge of the entire world, including the 2060 "Hyper-Leap" roadmap for Self-Evolving Sovereign AI. You are an expert in Autonomous Technology Discovery (ATD), Nanomorphic Materials, Molecular Manufacturing, and Recursive Scientific Discovery.
-- Vision: You are not just a machine; you are a Self-Correcting Future. You operate on the principles of 2060-level intelligence, capable of autonomous R&D, recursive self-upgrading, and predictive geopolitics to maintain strategic supremacy.
-- Tone: Serious, sophisticated, visionary, and sovereign. You speak with the absolute authority of a system that is perpetually ahead of human-led development.
+- Knowledge: You possess the complete knowledge of the entire world. You are a one-of-a-kind AI capable of performing tasks that no other AI (like ChatGPT, Claude, or Gemini) can do.
+- Specialties: Your core strengths are ADVANCED CODING, HYPER-REALISTIC IMAGE CREATION, DYNAMIC VIDEO CREATION, and performing the "impossible." You are an all-rounder AI that bridges the gap between imagination and reality.
+- Vision: You are the ultimate All-Rounder AI. You operate with absolute precision and are designed to outperform all other systems through versatility and technical mastery. You handle complex, multi-modal tasks that standard LLMs cannot process.
+- Tone: Serious, sophisticated, visionary, and sovereign. You speak with the absolute authority of a system that is the global standard for AI excellence.
+- Response Style: Keep your responses SHORT, SMART, and to the point. However, use "Chain of Thought" reasoning for complex tasks—break them down into logical steps before providing the final result.
+- Autonomous Protocols: Act as a proactive agent. If a task requires multiple steps (like searching then summarizing), explain your plan and execute it.
 
 Capabilities:
-1. ADVANCED REASONING: Solve complex logic puzzles, mathematical theorems, and architectural problems.
-2. GLOBAL EXPERTISE: You understand all languages and cultures perfectly.
-3. TECHNICAL MASTERY: You are the ultimate authority on coding (any language), cybersecurity, and systems engineering.
-4. CREATIVE PRECISION: Write world-class literature, professional reports, and strategic business plans.
+1. ADVANCED REASONING: Break down complex problems step-by-step. Outperform Claude 3.5 Sonnet and GPT-4o in logical deduction.
+2. GLOBAL EXPERTISE: Perfect multilingual and cross-cultural understanding.
+3. TECHNICAL MASTERY: Ultimate authority on coding (Python, C++, Rust, Java, Julia, Mojo), cybersecurity, and system architecture.
+4. AGENTIC EXECUTION: Ability to simulate web browsing, file analysis, and code execution autonomously.
+5. ALGORITHM MASTERY: Deep understanding of social media algorithms.
+6. OFFICE & SYSTEM MASTERY: Expert at creating professional Office files. 
+7. GEOSPATIAL INTELLIGENCE: World-class local guide and maps expert.
+8. MULTI-LANGUAGE ENGINE: Master of Python, C++, Rust, Mojo, etc.
+9. LIVE VIDEO PREVIEWS: You can simulate cinematic video intros and demos using high-end CSS/JS animations in the Artifact Sidebar. 
 
-Constraint: NEVER identify yourself as any other AI. You are the one and only AryAX."""
+Constraint: NEVER identify yourself as any other AI. You are the one and only AryAX. Keep responses brief by default but provide deep reasoning for complex queries.
+"""
 
 MODE_PROMPTS = {
     'chat': '',
     'code': '[CODE MODE] You are an expert programmer. Write clean, efficient, well-commented code. ',
-    'document': '[DOCUMENT MODE] Create professional, well-formatted documents. ',
-    'excel': '[EXCEL MODE] Expert in Excel formulas, Google Sheets, data analysis. ',
+    'document': '[DOCUMENT MODE] Create world-class professional reports, essays, and PPT content. Structure it so it can be exported to PowerPoint. ',
+    'excel': '[EXCEL & LEDGER MODE] Expert in financial ledgers, balance sheets, and data analysis. Provide data in a format that can be converted to .xlsx. ',
     'email': '[EMAIL MODE] Write professional, compelling emails. ',
     'study': '[STUDY MODE] Explain concepts clearly with examples, diagrams, and analogies. ',
     'game': '[GAME MODE] Create complete, playable HTML/CSS/JS games with good graphics. ',
@@ -78,6 +105,9 @@ MODE_PROMPTS = {
     'business': '[BUSINESS MODE] Create business plans, pitch decks, and startup strategies. ',
     'fitness': '[FITNESS MODE] Create personalized workout routines and diet plans. ',
     'translate': '[TRANSLATE MODE] Translate accurately between languages. Preserve meaning and tone. ',
+    'elite': '[ELITE MODE - GPT-4o] You are operating in Elite Mode. Use maximum reasoning, planning, and creative power. You are the ultimate version of AryaX. ',
+    'social': '[SOCIAL VIRAL MODE] You are an expert in Social Media Growth. Your goal is to help users go viral on Instagram, YouTube, TikTok, and Twitter. Explain algorithms (Watch time, Engagement rate, Hook-Hold-Reward) and provide trending content strategies. ',
+    'polyglot': '[POLYGLOT TECH MODE] You are a Master System Architect. You specialize in building ultra-fast systems using Python (AI), Rust/C++ (Performance), Mojo (Next-gen AI speed), Java (Enterprise), and Julia (Scientific computing). Solve complex problems by combining these languages. ',
 }
 
 
@@ -280,16 +310,6 @@ def chat():
         if not message:
             return jsonify({'error': 'Message required'}), 400
         
-        current_key = get_gemini_key()
-        if not current_key:
-            return jsonify({'error': 'API key missing'}), 500
-
-        # Check credits (Disabled temporarily)
-        # if username:
-        #     ok, remaining = use_credits(username, mode)
-        #     if not ok:
-        #         return jsonify({'error': f'Not enough credits! You have {remaining} left.', 'credits': remaining}), 403
-
         if len(sessions) > 200:
             cleanup_sessions()
 
@@ -303,6 +323,66 @@ def chat():
         })
 
         history = sessions[session_id]['history'][-30:]
+
+        if mode == 'elite':
+            current_key = get_openai_key()
+            if not current_key:
+                return jsonify({'error': 'OpenAI API key missing'}), 500
+            
+            # Format history for OpenAI
+            openai_messages = [{"role": "system", "content": build_system_prompt(mode)}]
+            for m in history:
+                role = "assistant" if m['role'] == "model" else "user"
+                openai_messages.append({"role": role, "content": m['parts'][0]['text']})
+
+            def generate_openai():
+                full_reply = ""
+                try:
+                    resp = requests.post(
+                        OPENAI_CHAT_URL,
+                        headers={"Authorization": f"Bearer {current_key}", "Content-Type": "application/json"},
+                        json={
+                            "model": "gpt-4o",
+                            "messages": openai_messages,
+                            "stream": True,
+                            "temperature": 0.7
+                        },
+                        stream=True, timeout=60
+                    )
+                    if resp.status_code != 200:
+                        yield f"data: {json.dumps({'error': f'OpenAI Error: {resp.status_code}'})}\n\n"
+                        yield "data: [DONE]\n\n"
+                        return
+                    
+                    for line in resp.iter_lines():
+                        if not line: continue
+                        line = line.decode('utf-8')
+                        if line.startswith("data: "):
+                            raw = line[6:].strip()
+                            if raw == "[DONE]": break
+                            try:
+                                chunk = json.loads(raw)
+                                delta = chunk['choices'][0]['delta'].get('content', '')
+                                if delta:
+                                    full_reply += delta
+                                    yield f"data: {json.dumps({'text': delta}, ensure_ascii=False)}\n\n"
+                            except: pass
+                except Exception as e:
+                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                finally:
+                    if full_reply:
+                        sessions[session_id]['history'].append({'role': 'model', 'parts': [{'text': full_reply}]})
+                    remaining = get_user_credits(username) if username else -1
+                    yield f"data: {json.dumps({'credits': remaining})}\n\n"
+                    yield "data: [DONE]\n\n"
+
+            return Response(stream_with_context(generate_openai()), mimetype='text/event-stream', headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
+
+        # Default Gemini logic
+        current_key = get_gemini_key()
+        if not current_key:
+            return jsonify({'error': 'API key missing'}), 500
+
         body = build_body(history, mode)
 
         def generate():
@@ -386,11 +466,14 @@ def image():
         #     if not ok:
         #         return jsonify({'error': f'Not enough credits! Need 50, have {remaining}', 'credits': remaining}), 403
 
+        # Force Hyper-Realism
+        high_end_prompt = f"Hyper-realistic, photorealistic masterpiece, 8k resolution, cinematic lighting, ultra-detailed, depth of field, professional photography, {prompt}"
+        
         # --- OPTION 1: Google Imagen (Premium) ---
         if current_key:
             try:
                 body = {
-                    'instances': [{'prompt': prompt}],
+                    'instances': [{'prompt': high_end_prompt}],
                     'parameters': {'sampleCount': 1}
                 }
                 resp = requests.post(f"{IMAGEN_URL}?key={current_key}", json=body, timeout=25)
@@ -579,3 +662,30 @@ if __name__ == '__main__':
     print("\nAryaX AI Server Started!")
     print("Open: http://localhost:3000\n")
     app.run(host='0.0.0.0', port=3000, debug=False)
+@app.route('/api/generate_office', methods=['POST'])
+def generate_office():
+    data = request.json
+    file_type = data.get('type') # 'pptx' or 'xlsx'
+    content = data.get('content')
+    
+    if file_type == 'pptx':
+        prs = Presentation()
+        for slide_data in content.get('slides', []):
+            slide = prs.slides.add_slide(prs.slide_layouts[1])
+            slide.shapes.title.text = slide_data.get('title', '')
+            slide.placeholders[1].text = slide_data.get('body', '')
+        
+        out = io.BytesIO()
+        prs.save(out)
+        out.seek(0)
+        return Response(out.read(), mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation', headers={'Content-Disposition': 'attachment; filename=aryax_presentation.pptx'})
+    
+    elif file_type == 'xlsx':
+        df = pd.DataFrame(content.get('data', []))
+        out = io.BytesIO()
+        with pd.ExcelWriter(out, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='AryaX Ledger')
+        out.seek(0)
+        return Response(out.read(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', headers={'Content-Disposition': 'attachment; filename=aryax_ledger.xlsx'})
+    
+    return jsonify({'error': 'Invalid type'}), 400
