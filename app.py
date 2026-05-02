@@ -203,10 +203,13 @@ def signup():
     data = request.json
     username = data.get('username', '').strip().lower()
     password = data.get('password', '')
+    mobile = data.get('mobile', '').strip()
+    email = data.get('email', '').strip().lower()
+    
     if not username or not password:
         return jsonify({'error': 'Username and password required'}), 400
-    if len(username) < 3:
-        return jsonify({'error': 'Username must be 3+ characters'}), 400
+    if len(username) < 6:
+        return jsonify({'error': 'Username must be at least 6 characters'}), 400
     if len(password) < 4:
         return jsonify({'error': 'Password must be 4+ characters'}), 400
 
@@ -216,6 +219,8 @@ def signup():
 
     db['users'][username] = {
         'password': hash_pass(password),
+        'mobile': mobile,
+        'email': email,
         'credits': DAILY_LIMIT,
         'credit_date': str(date.today()),
         'created': str(datetime.now()),
@@ -279,11 +284,11 @@ def chat():
         if not current_key:
             return jsonify({'error': 'API key missing'}), 500
 
-        # Check credits
-        if username:
-            ok, remaining = use_credits(username, mode)
-            if not ok:
-                return jsonify({'error': f'Not enough credits! You have {remaining} left.', 'credits': remaining}), 403
+        # Check credits (Disabled temporarily)
+        # if username:
+        #     ok, remaining = use_credits(username, mode)
+        #     if not ok:
+        #         return jsonify({'error': f'Not enough credits! You have {remaining} left.', 'credits': remaining}), 403
 
         if len(sessions) > 200:
             cleanup_sessions()
@@ -376,10 +381,10 @@ def image():
             return jsonify({'error': 'Prompt required'}), 400
 
         current_key = get_gemini_key()
-        if username:
-            ok, remaining = use_credits(username, 'image')
-            if not ok:
-                return jsonify({'error': f'Not enough credits! Need 50, have {remaining}', 'credits': remaining}), 403
+        # if username:
+        #     ok, remaining = use_credits(username, 'image')
+        #     if not ok:
+        #         return jsonify({'error': f'Not enough credits! Need 50, have {remaining}', 'credits': remaining}), 403
 
         # --- OPTION 1: Google Imagen (Premium) ---
         if current_key:

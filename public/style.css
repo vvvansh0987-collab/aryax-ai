@@ -40,8 +40,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 /* ===== AUTH ===== */
 .auth-overlay{position:fixed;inset:0;z-index:10000;background:#ffffff;display:flex;align-items:center;justify-content:center;padding:20px}
 .auth-card{background:#ffffff;border:1px solid #e2e2e2;border-radius:12px;padding:48px;width:100%;max-width:420px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.05)}
-.auth-logo{width:64px;height:64px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;overflow:hidden}
-.auth-logo img{width:100%;height:100%;object-fit:cover}
+.auth-logo{width:80px;height:80px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center}
+.auth-logo img{max-width:100%;height:auto;object-fit:contain}
 .auth-title{font-size:32px;font-weight:800;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px}
 .auth-sub{font-size:14px;color:var(--text-muted);margin-bottom:30px}
 .auth-tabs{display:flex;gap:4px;background:var(--card);border-radius:10px;padding:4px;margin-bottom:20px}
@@ -55,6 +55,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .auth-submit{width:100%;padding:14px;background:var(--primary);color:var(--primary-text);border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
 .auth-submit:hover{background:#333}
 .auth-footer{font-size:11px;color:var(--text-muted);margin-top:18px;opacity:.6}
+.google-btn{width:100%;padding:12px;background:#fff;border:1px solid #e2e2e2;border-radius:8px;color:#000;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;font-family:inherit;margin-top:10px}
+.google-btn:hover{background:#f9f9f9;border-color:#ccc}
 
 /* ===== APP ===== */
 .app{display:flex;height:100vh;overflow:hidden}
@@ -63,8 +65,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100%;flex-shrink:0;transition:transform .3s ease;z-index:100}
 .sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 12px;border-bottom:1px solid var(--border)}
 .logo{display:flex;align-items:center;gap:8px}
-.logo-icon{width:32px;height:32px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.logo-icon img{width:100%;height:100%;object-fit:cover}
+.logo-icon{width:32px;height:32px;background:none;display:flex;align-items:center;justify-content:center}
+.logo-icon img{max-width:100%;height:auto;object-fit:contain}
 .logo-text{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
 .icon-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;transition:all .2s}
 .icon-btn:hover{background:var(--border);color:var(--text)}
@@ -105,8 +107,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .user-plan{font-size:10px;color:var(--text-muted)}
 .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-muted);font-size:13px;padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .2s}
 .logout-btn:hover{border-color:var(--error);color:var(--error)}
-.upgrade-btn{width:100%;padding:8px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;box-shadow:0 4px 14px rgba(124,58,237,0.3)}
-.upgrade-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,58,237,0.4)}
+.upgrade-btn{width:100%;padding:10px;background:var(--primary);color:var(--primary-text);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;box-shadow:0 4px 14px rgba(255,255,255,0.1)}
+.upgrade-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,255,255,0.15)}
 
 /* Pricing Modal */
 .pricing-overlay{position:fixed;inset:0;z-index:9998;background:rgba(6,6,11,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px}
@@ -227,8 +229,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .input-box textarea::placeholder{color:var(--text-muted)}
 .input-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;padding-bottom:4px}
 .credit-cost{font-size:11px;color:var(--primary-light);font-weight:600;padding:2px 6px;background:rgba(124,58,237,0.15);border-radius:6px;opacity:.9}
-.plus-btn{width:32px;height:32px;background:#f0f0f0;border:1px solid #e2e2e2;border-radius:50%;color:#000;font-size:20px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
-.plus-btn:hover{background:#e5e5e5;transform:rotate(90deg)}
+.plus-btn{width:32px;height:32px;background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.plus-btn:hover{color:var(--text);background:var(--border);border-radius:50%}
 .plus-menu{position:absolute;bottom:70px;left:20px;background:#fff;border:1px solid #e2e2e2;border-radius:12px;padding:8px;display:none;flex-direction:column;gap:4px;box-shadow:0 10px 40px rgba(0,0,0,0.1);z-index:100;min-width:160px}
 .plus-menu.show{display:flex}
 .menu-item{padding:10px 14px;background:none;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:500;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;white-space:nowrap;width:100%}

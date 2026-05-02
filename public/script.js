@@ -64,14 +64,19 @@ loginForm?.addEventListener("submit",async e=>{
 
 signupForm?.addEventListener("submit",async e=>{
   e.preventDefault();
-  const u=$("signupUser").value.trim(),p=$("signupPass").value;
+  const u=$("signupUser").value.trim(),p=$("signupPass").value,m=$("signupMobile").value.trim(),em=$("signupEmail").value.trim();
   $("signupError").textContent="";
+  if(u.length < 6){$("signupError").textContent="Username must be at least 6 characters";return}
   try{
-    const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:u,password:p})});
+    const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:u,password:p,mobile:m,email:em})});
     const d=await r.json();
     if(!r.ok){$("signupError").textContent=d.error;return}
     loginSuccess(d.username,d.credits);
   }catch{$("signupError").textContent="Server error";}
+});
+
+$("googleBtn")?.addEventListener("click", () => {
+  alert("Google Sign-In is being integrated...");
 });
 
 function loginSuccess(username,credits){
