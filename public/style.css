@@ -76,10 +76,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .mode-btn.hack-btn{color:#0f0;border-color:#0a3a0a}
 .mode-btn.hack-btn:hover{background:rgba(0,255,0,0.05);border-color:#0f0}
 
+/* Persona */
+.persona-select{padding:4px 8px}
+.persona-select select{width:100%;padding:7px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:border .2s}
+.persona-select select:focus{border-color:var(--primary)}
+.persona-select select option{background:var(--surface);color:var(--text)}
+
 /* Recent */
 .recent-list{flex:1;overflow-y:auto;padding:4px 8px}
-.recent-item{padding:6px 10px;border-radius:6px;font-size:12px;color:var(--text-muted);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:all .2s}
+.recent-item{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:6px;font-size:12px;color:var(--text-muted);cursor:pointer;transition:all .2s}
 .recent-item:hover{background:var(--card);color:var(--text)}
+.recent-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-item .del-btn{display:none;background:none;border:none;color:var(--error);font-size:11px;cursor:pointer;padding:0 2px}
+.recent-item:hover .del-btn{display:block}
 .empty-hint{font-size:12px;color:var(--text-muted);padding:6px 10px;opacity:.5}
 
 /* Footer */
@@ -100,8 +109,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 /* ===== MAIN ===== */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
 .topbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
-.menu-btn,.clear-btn{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:5px;border-radius:6px;transition:all .2s;line-height:1}
-.menu-btn:hover,.clear-btn:hover{background:var(--card);color:var(--text)}
+.topbar-btn,.clear-btn{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:5px;border-radius:6px;transition:all .2s;line-height:1}
+.topbar-btn:hover,.menu-btn:hover,.clear-btn:hover{background:var(--card);color:var(--text)}
+.topbar-btn.tts-on{color:var(--success);text-shadow:0 0 6px rgba(16,185,129,0.4)}
 .topbar-center{flex:1;display:flex;justify-content:center}
 .model-pill{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600}
 .live-dot{width:6px;height:6px;background:var(--success);border-radius:50%;animation:pulse 2s infinite}

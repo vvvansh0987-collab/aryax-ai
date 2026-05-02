@@ -1,0 +1,12 @@
+{
+  "name": "AryaX AI — Next-Gen AI Assistant",
+  "short_name": "AryaX AI",
+  "description": "World's most advanced AI assistant. Code, Learn, Create, Hack — all in one.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06060b",
+  "theme_color": "#7c3aed",
+  "icons": [
+    { "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c3aed'/><text x='50' y='72' text-anchor='middle' font-size='60'>⚡</text></svg>", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

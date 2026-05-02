@@ -8,6 +8,10 @@
   <meta name="keywords" content="AI, artificial intelligence, chatbot, coding, AryaX, ChatGPT alternative"/>
   <meta property="og:title" content="AryaX AI — Next-Gen AI Assistant"/>
   <meta property="og:description" content="Smarter than ChatGPT. Code, Docs, Excel, Cybersecurity & more."/>
+  <meta name="theme-color" content="#7c3aed"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <link rel="manifest" href="manifest.json"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
@@ -99,9 +103,22 @@
       <button class="mode-btn hack-btn" data-mode="hack">💀 <span>Hack Mode</span></button>
     </div>
 
-    <div class="section-label">RECENT</div>
+    <div class="section-label">PERSONA</div>
+    <div class="persona-select">
+      <select id="personaSelect">
+        <option value="default">🧠 Default (Smart)</option>
+        <option value="friendly">😊 Friendly Buddy</option>
+        <option value="teacher">👨‍🏫 Strict Teacher</option>
+        <option value="funny">😂 Funny & Witty</option>
+        <option value="professional">👔 Professional</option>
+        <option value="pirate">🏴‍☠️ Pirate Mode</option>
+        <option value="guru">🧘 Spiritual Guru</option>
+      </select>
+    </div>
+
+    <div class="section-label">CHAT HISTORY</div>
     <div id="recentList" class="recent-list">
-      <p class="empty-hint">No chats yet</p>
+      <p class="empty-hint">No saved chats</p>
     </div>
 
     <div class="sidebar-footer">
@@ -133,7 +150,9 @@
         <span class="credit-icon">⚡</span>
         <span id="creditCount">5000</span>
       </div>
-      <button class="clear-btn" id="clearChat" title="Clear Chat">🗑️</button>
+      <button class="topbar-btn" id="ttsToggle" title="Toggle Text-to-Speech">🔇</button>
+      <button class="topbar-btn" id="exportChat" title="Export Chat (Ctrl+E)">📥</button>
+      <button class="topbar-btn" id="clearChat" title="Clear Chat (Ctrl+L)">🗑️</button>
     </div>
 
     <!-- CHAT -->
@@ -174,6 +193,7 @@
         <div class="input-actions">
           <span class="credit-cost" id="creditCost" title="Cost per message">9⚡</span>
           <button class="voice-btn" id="voiceBtn" title="Voice Input">🎤</button>
+          <label class="attach-btn" id="fileUploadLabel" title="Upload File">📎<input type="file" id="fileUpload" accept=".txt,.md,.csv,.json,.py,.js,.html,.css" hidden/></label>
           <button class="attach-btn" id="imageGenBtn" title="Image Mode">🖼️</button>
           <button class="send-btn" id="send">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

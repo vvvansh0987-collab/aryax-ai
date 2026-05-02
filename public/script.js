@@ -13,10 +13,14 @@ const authOverlay = $("authOverlay"), mainApp = $("mainApp");
 const loginForm = $("loginForm"), signupForm = $("signupForm");
 const tabLogin = $("tabLogin"), tabSignup = $("tabSignup");
 const logoutBtn = $("logoutBtn");
+const ttsToggle = $("ttsToggle"), exportBtn = $("exportChat");
+const personaSelect = $("personaSelect"), fileUpload = $("fileUpload");
 
 // ===== STATE =====
 let sessionId = uid(), isTyping = false, currentMode = "chat";
 let firstMsg = true, isDark = true, currentUser = null;
+let ttsEnabled = false, currentPersona = "default";
+let chatHistory = []; // {role, text} for export
 
 const modeNames = {
   chat:"General Chat",code:"Code AI",document:"Document Writer",
@@ -269,14 +273,16 @@ async function sendMessage(){
 
   if(currentMode==="image"){await generateImage(msg);isTyping=false;sendBtn.disabled=false;input.focus();return}
 
+  const personaPrefix=personas[currentPersona]?`[Persona: ${personas[currentPersona]}] `:"";
   const prefix=currentMode!=="chat"?`[${modeNames[currentMode]}] `:"";
   addUserMessage(msg);
+  chatHistory.push({role:"user",text:msg});
   const botEl=createBotMessage();
   let fullText="";
 
   try{
     const response=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:prefix+msg,sessionId,username:currentUser,mode:currentMode})});
+      body:JSON.stringify({message:personaPrefix+prefix+msg,sessionId,username:currentUser,mode:currentMode})});
 
     if(!response.ok){
       const err=await response.json();
@@ -301,6 +307,9 @@ async function sendMessage(){
         const raw=line.slice(6).trim();
         if(raw==="[DONE]"){done_streaming=true;
           botEl.innerHTML=renderMarkdown(fullText);
+          chatHistory.push({role:"bot",text:fullText});
+          saveChatToHistory(msg);
+          speakText(fullText);
           if(/<html[\s\S]*<\/html>/i.test(fullText)||fullText.includes("<!DOCTYPE html")){
             const rb=document.createElement("button");rb.textContent="▶ Run";rb.className="copy-btn";
             rb.style.cssText="margin-top:8px;padding:6px 14px;font-size:12px;";
@@ -445,3 +454,117 @@ function closeHackMode(){stopMatrix();hackOverlay.style.display="none";hackOutpu
 hackCloseBtn?.addEventListener("click",closeHackMode);
 hackInput?.addEventListener("keydown",async e=>{if(e.key==="Enter"){e.preventDefault();const c=hackInput.value.trim();if(!c)return;hackInput.value="";await runHackCommand(c)}});
 hackSendBtn?.addEventListener("click",async()=>{const c=hackInput.value.trim();if(!c)return;hackInput.value="";await runHackCommand(c)});
+
+// ===== TEXT-TO-SPEECH =====
+function speakText(text){
+  if(!ttsEnabled||!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const clean=text.replace(/```[\s\S]*?```/g,'code block').replace(/[#*_~`>|]/g,'').replace(/\[.*?\]\(.*?\)/g,'link');
+  const chunks=clean.match(/[^.!?\n]{1,200}[.!?\n]?/g)||[clean];
+  chunks.forEach(chunk=>{
+    const u=new SpeechSynthesisUtterance(chunk.trim());
+    u.rate=1.05;u.pitch=1;u.lang='en-IN';
+    window.speechSynthesis.speak(u);
+  });
+}
+ttsToggle?.addEventListener("click",()=>{
+  ttsEnabled=!ttsEnabled;
+  ttsToggle.textContent=ttsEnabled?"🔊":"🔇";
+  ttsToggle.classList.toggle("tts-on",ttsEnabled);
+  if(!ttsEnabled)window.speechSynthesis?.cancel();
+});
+
+// ===== PERSONA =====
+const personas={
+  default:"",
+  friendly:"Be extremely friendly, warm, and supportive. Use casual language and emoji. Be like a best friend.",
+  teacher:"Be a strict but fair teacher. If the answer is wrong, correct firmly. Give homework and quizzes.",
+  funny:"Be hilarious and witty. Use jokes, puns, and funny analogies. Make every response entertaining.",
+  professional:"Be extremely formal and professional. Use business language. No casual talk.",
+  pirate:"Talk like a pirate! Use 'Arrr', 'matey', 'shiver me timbers'. Answer everything in pirate speak.",
+  guru:"Be a wise spiritual guru. Use philosophical quotes, metaphors from nature. Speak calmly and wisely."
+};
+personaSelect?.addEventListener("change",()=>{currentPersona=personaSelect.value});
+
+// ===== FILE UPLOAD =====
+fileUpload?.addEventListener("change",async e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+  if(file.size>500000){alert("File too large! Max 500KB");return}
+  const text=await file.text();
+  const preview=text.length>2000?text.substring(0,2000)+"\n...(truncated)":text;
+  input.value=`Analyze this file (${file.name}):\n\n\`\`\`\n${preview}\n\`\`\``;
+  input.style.height="auto";input.style.height=Math.min(input.scrollHeight,150)+"px";
+  fileUpload.value="";
+  input.focus();
+});
+
+// ===== EXPORT CHAT =====
+function exportChatToFile(){
+  if(chatHistory.length===0){alert("No chat to export!");return}
+  let text="=== AryaX AI Chat Export ===\nDate: "+new Date().toLocaleString()+"\n\n";
+  chatHistory.forEach(m=>{
+    text+=(m.role==="user"?"👤 YOU":"🤖 ARYAX")+":\n"+m.text+"\n\n";
+  });
+  const blob=new Blob([text],{type:"text/plain"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`aryax-chat-${Date.now()}.txt`;
+  a.click();URL.revokeObjectURL(a.href);
+}
+exportBtn?.addEventListener("click",exportChatToFile);
+
+// ===== CHAT HISTORY SAVE/LOAD =====
+function saveChatToHistory(title){
+  const saved=JSON.parse(localStorage.getItem("aryax-chats")||"[]");
+  saved.unshift({id:sessionId,title:title.substring(0,40),messages:chatHistory.slice(),date:Date.now()});
+  if(saved.length>20)saved.length=20;
+  localStorage.setItem("aryax-chats",JSON.stringify(saved));
+  renderChatHistory();
+}
+function renderChatHistory(){
+  const saved=JSON.parse(localStorage.getItem("aryax-chats")||"[]");
+  recentList.innerHTML="";
+  if(!saved.length){recentList.innerHTML='<p class="empty-hint">No saved chats</p>';return}
+  saved.forEach((ch,i)=>{
+    const item=document.createElement("div");
+    item.className="recent-item";
+    item.innerHTML=`<span>${ch.title||"Chat "+(i+1)}</span><button class="del-btn" title="Delete">✕</button>`;
+    item.querySelector("span").addEventListener("click",()=>loadChat(ch));
+    item.querySelector(".del-btn").addEventListener("click",e=>{e.stopPropagation();deleteChat(i)});
+    recentList.appendChild(item);
+  });
+}
+function loadChat(ch){
+  sessionId=ch.id||uid();firstMsg=false;chatHistory=ch.messages||[];
+  $("welcome")?.remove();
+  chat.innerHTML="";
+  chatHistory.forEach(m=>{
+    if(m.role==="user")addUserMessage(m.text);
+    else addBotMessage(m.text);
+  });
+  closeSide();
+}
+function deleteChat(index){
+  const saved=JSON.parse(localStorage.getItem("aryax-chats")||"[]");
+  saved.splice(index,1);
+  localStorage.setItem("aryax-chats",JSON.stringify(saved));
+  renderChatHistory();
+}
+renderChatHistory();
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey||e.metaKey){
+    if(e.key==="k"||e.key==="K"){e.preventDefault();input.focus()}
+    if(e.key==="n"||e.key==="N"){e.preventDefault();resetChat()}
+    if(e.key==="e"||e.key==="E"){e.preventDefault();exportChatToFile()}
+    if(e.key==="l"||e.key==="L"){e.preventDefault();resetChat()}
+  }
+  if(e.key==="Escape"){closeHackMode();closeSide()}
+});
+
+// ===== PWA SERVICE WORKER =====
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
