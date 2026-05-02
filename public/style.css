@@ -131,3 +131,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .input-footer [data-tooltip]:hover::after {
   transform: translateX(-50%) translateY(-10px);
 }
+
+.sidebar span { display: none !important; }
+.sidebar .badge { display: none !important; }
+
