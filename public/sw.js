@@ -1,4 +1,4 @@
-const CACHE = 'aryax-v1';
+const CACHE = 'aryax-v2060-final';
 const ASSETS = ['/', '/style.css', '/script.js', '/manifest.json'];
 
 self.addEventListener('install', e => {
