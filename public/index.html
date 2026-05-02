@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AryaX AI — World's Most Advanced AI Assistant</title>
+  <meta name="description" content="AryaX AI — Next-generation AI that outperforms ChatGPT and Claude. Code, Learn, Create, Hack — all in one."/>
+  <meta name="keywords" content="AI, artificial intelligence, chatbot, coding, AryaX, ChatGPT alternative"/>
+  <meta property="og:title" content="AryaX AI — Next-Gen AI Assistant"/>
+  <meta property="og:description" content="Smarter than ChatGPT. Code, Docs, Excel, Cybersecurity & more."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo">⚡</div>
+    <h1 class="auth-title">AryaX AI</h1>
+    <p class="auth-sub">Next-generation AI — Beyond human intelligence</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin">Login</button>
+      <button class="auth-tab" id="tabSignup">Sign Up</button>
+    </div>
+
+    <!-- Login Form -->
+    <form class="auth-form" id="loginForm">
+      <div class="auth-field">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username" required/>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password" required/>
+      </div>
+      <div class="auth-error" id="loginError"></div>
+      <button type="submit" class="auth-submit">Login to AryaX</button>
+    </form>
+
+    <!-- Signup Form -->
+    <form class="auth-form" id="signupForm" style="display:none">
+      <div class="auth-field">
+        <label>Choose Username</label>
+        <input type="text" id="signupUser" placeholder="Min 3 characters" autocomplete="username" required/>
+      </div>
+      <div class="auth-field">
+        <label>Create Password</label>
+        <input type="password" id="signupPass" placeholder="Min 4 characters" autocomplete="new-password" required/>
+      </div>
+      <div class="auth-error" id="signupError"></div>
+      <button type="submit" class="auth-submit">Create Account</button>
+    </form>
+
+    <p class="auth-footer">By continuing, you agree to AryaX AI Terms of Service</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp" style="display:none">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <span class="logo-text">AryaX AI</span>
+      </div>
+      <button class="icon-btn" id="closeSidebar" title="Close">✕</button>
+    </div>
+
+    <button class="new-chat-btn" id="newChat">+ New Chat</button>
+
+    <div class="section-label">MODES</div>
+    <div class="mode-list" id="modeList">
+      <button class="mode-btn active" data-mode="chat">💬 <span>Chat</span></button>
+      <button class="mode-btn" data-mode="code">💻 <span>Code</span></button>
+      <button class="mode-btn" data-mode="cyber">🔒 <span>Cyber Security</span></button>
+      <button class="mode-btn" data-mode="webdev">🌐 <span>Web Dev</span></button>
+      <button class="mode-btn" data-mode="document">📄 <span>Documents</span></button>
+      <button class="mode-btn" data-mode="excel">📊 <span>Excel</span></button>
+      <button class="mode-btn" data-mode="email">📧 <span>Email</span></button>
+      <button class="mode-btn" data-mode="image">🖼️ <span>Image Gen</span></button>
+      <button class="mode-btn" data-mode="math">🧮 <span>Math Solver</span></button>
+      <button class="mode-btn" data-mode="essay">📝 <span>Essay Writer</span></button>
+      <button class="mode-btn" data-mode="study">📚 <span>Study</span></button>
+      <button class="mode-btn" data-mode="aitutor">🤖 <span>AI Tutor</span></button>
+      <button class="mode-btn" data-mode="game">🎮 <span>Games</span></button>
+      <button class="mode-btn" data-mode="design">🎨 <span>Design</span></button>
+      <button class="mode-btn" data-mode="business">💼 <span>Business</span></button>
+      <button class="mode-btn" data-mode="appidea">📱 <span>App Ideas</span></button>
+      <button class="mode-btn" data-mode="fitness">🏋️ <span>Fitness</span></button>
+      <button class="mode-btn" data-mode="translate">🌍 <span>Translate</span></button>
+      <button class="mode-btn hack-btn" data-mode="hack">💀 <span>Hack Mode</span></button>
+    </div>
+
+    <div class="section-label">RECENT</div>
+    <div id="recentList" class="recent-list">
+      <p class="empty-hint">No chats yet</p>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙 Dark Mode</button>
+      <div class="user-row">
+        <div class="avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-name" id="userName">User</div>
+          <div class="user-plan">⚡ Gemini 2.5 Flash</div>
+        </div>
+        <button class="logout-btn" id="logoutBtn" title="Logout">↩</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <div class="topbar-center">
+        <div class="model-pill">
+          <span class="live-dot"></span>
+          <span id="modeLabel">General Chat</span>
+        </div>
+      </div>
+      <div class="credit-pill" id="creditPill" title="Daily credits remaining">
+        <span class="credit-icon">⚡</span>
+        <span id="creditCount">5000</span>
+      </div>
+      <button class="clear-btn" id="clearChat" title="Clear Chat">🗑️</button>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat" id="chat">
+      <div class="welcome" id="welcome">
+        <div class="welcome-logo">⚡</div>
+        <h1>AryaX AI</h1>
+        <p class="welcome-tagline">Next-generation AI — Beyond human intelligence</p>
+        <div class="welcome-stats">
+          <div class="stat"><span class="stat-num">17+</span><span class="stat-label">AI Modes</span></div>
+          <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Knowledge</span></div>
+          <div class="stat"><span class="stat-num">5000</span><span class="stat-label">Daily Credits</span></div>
+        </div>
+        <div class="quick-grid">
+          <button class="quick-btn" data-msg="Write a Python web scraper with BeautifulSoup">💻 Python Scraper</button>
+          <button class="quick-btn" data-msg="Teach me ethical hacking basics — where to start?">🔒 Learn Hacking</button>
+          <button class="quick-btn" data-msg="Build a complete landing page for a SaaS startup">🌐 Build Website</button>
+          <button class="quick-btn" data-msg="Solve: integrate x^2 * e^x dx step by step">🧮 Solve Calculus</button>
+          <button class="quick-btn" data-msg="Create a complete playable Flappy Bird game in HTML/CSS/JS">🎮 Flappy Bird</button>
+          <button class="quick-btn" data-msg="Write a 1000-word essay on artificial intelligence impact on society">📝 Write Essay</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGE PREVIEW -->
+    <div class="image-preview" id="imagePreview" style="display:none">
+      <img id="generatedImage" src="" alt="Generated"/>
+      <div class="image-actions">
+        <a id="downloadImg" href="#" download="aryax-image.png" class="img-btn">⬇️ Download</a>
+        <button onclick="document.getElementById('imagePreview').style.display='none'" class="img-btn">✕ Close</button>
+      </div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="input-area">
+      <div class="input-box" id="inputBox">
+        <textarea id="input" placeholder="Ask AryaX anything... (Shift+Enter for new line)" rows="1"></textarea>
+        <div class="input-actions">
+          <span class="credit-cost" id="creditCost" title="Cost per message">9⚡</span>
+          <button class="voice-btn" id="voiceBtn" title="Voice Input">🎤</button>
+          <button class="attach-btn" id="imageGenBtn" title="Image Mode">🖼️</button>
+          <button class="send-btn" id="send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="disclaimer">AryaX AI can make mistakes. Verify important info. • Powered by Gemini 2.5 Flash • Built by AryaX Labs</p>
+    </div>
+  </div>
+</div>
+
+<!-- HACK MODE OVERLAY -->
+<div class="hack-overlay" id="hackOverlay" style="display:none">
+  <canvas id="matrixCanvas"></canvas>
+  <div class="hack-terminal">
+    <div class="hack-topbar">
+      <div class="hack-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+      <span class="hack-title">AryaX SYSTEM ACCESS — v4.7.1</span>
+      <button class="hack-close" id="hackClose">✕ EXIT</button>
+    </div>
+    <div class="hack-output" id="hackOutput"></div>
+    <div class="hack-input-row">
+      <span class="hack-prompt">root@aryax:~#</span>
+      <input class="hack-input" id="hackInput" type="text" placeholder="Enter command..." autocomplete="off" spellcheck="false"/>
+      <button class="hack-send" id="hackSend">⏎</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
