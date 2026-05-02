@@ -269,23 +269,10 @@ async function handleSlashCommand(msg){
   const cmd=parts[0].toLowerCase();
   const arg=parts.slice(1).join(" ");
 
+  // Secret: only owner knows these commands. /help is hidden.
   if(cmd==="/help"){
     addUserMessage(msg);
-    addBotMessage(`## ⚡ AryaX Slash Commands
-
-| Command | Description |
-|---------|-------------|
-| \`/search <query>\` | 🔍 Web search (DuckDuckGo) |
-| \`/url <link>\` | 🌐 Read & analyze any website |
-| \`/run <code>\` | ▶️ Execute JavaScript code live |
-| \`/calc <expression>\` | 🧮 Instant calculator |
-| \`/time\` | 🕐 Current time |
-| \`/credits\` | ⚡ Check remaining credits |
-| \`/weather <city>\` | 🌤️ Weather info |
-| \`/qr <text>\` | 📱 Generate QR code |
-| \`/help\` | ❓ This help menu |
-
-**Pro tip:** You can also just type normally!`);
+    addBotMessage("I'm sorry, I don't understand that command. Just type your question normally!");
     return true;
   }
 
