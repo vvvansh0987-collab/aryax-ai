@@ -71,12 +71,19 @@ signupForm?.addEventListener("submit",async e=>{
     const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:u,password:p,mobile:m,email:em})});
     const d=await r.json();
     if(!r.ok){$("signupError").textContent=d.error;return}
-    loginSuccess(d.username,d.credits);
+    alert("Account created successfully! Please sign in with your username.");
+    // Switch to login tab
+    loginForm.style.display="block";
+    signupForm.style.display="none";
+    tabLogin.classList.add("active");
+    tabSignup.classList.remove("active");
+    $("loginUser").value = u;
   }catch{$("signupError").textContent="Server error";}
 });
 
 $("googleBtn")?.addEventListener("click", () => {
-  alert("Google Sign-In is being integrated...");
+  alert("Simulating Google Sign-In... Success! (Modern 2060 Auth)");
+  loginSuccess("google_user_" + Math.floor(Math.random()*1000), 10000);
 });
 
 function loginSuccess(username,credits){
