@@ -122,7 +122,7 @@ logoutBtn?.addEventListener("click",()=>{
 function applyTheme(dark){
   isDark=dark;
   document.documentElement.setAttribute("data-theme",dark?"dark":"light");
-  themeToggle.textContent=dark?"🌙 Dark Mode":"☀️ Light Mode";
+  themeToggle.innerHTML=dark?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Dark Mode':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Light Mode';
   localStorage.setItem("aryax-theme",dark?"dark":"light");
 }
 themeToggle?.addEventListener("click",()=>applyTheme(!isDark));
@@ -135,24 +135,18 @@ overlay?.addEventListener("click",closeSide);
 closeSidebarBtn?.addEventListener("click",closeSide);
 function closeSide(){sidebar.classList.remove("open");overlay.classList.remove("show")}
 
-// ===== ARTIFACTS (Manus High-Speed Engine) =====
-function runArtifact(htmlCode) {
-  artifactSidebar.classList.add("open");
-  const blob = new Blob([htmlCode], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
-  
-  artifactBody.innerHTML = `
-    <div class="artifact-controls" style="padding: 10px; display: flex; gap: 10px; border-bottom: 1px solid var(--border);">
-      <button class="quick-btn" onclick="window.open('${url}', '_blank')">🚀 Open Full View</button>
-      <button class="quick-btn" onclick="downloadCode()">💾 Download Game</button>
-    </div>
-    <iframe src="${url}" style="width: 100%; height: calc(100% - 50px); border: none;" 
-      sandbox="allow-scripts allow-forms allow-popups allow-modals allow-same-origin"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen>
-    </iframe>
-  `;
-  window.lastArtifactCode = htmlCode;
+// ===== ARTIFACTS (Live Canvas & Pyodide) =====
+let pyodideInstance = null;
+
+async function initPyodide() {
+  if(!pyodideInstance) {
+    try {
+      pyodideInstance = await loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/" });
+    } catch(e) {
+      console.error("Pyodide failed to load", e);
+    }
+  }
+  return pyodideInstance;
 }
 
 function downloadCode() {
@@ -160,7 +154,7 @@ function downloadCode() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "aryax_game.html";
+  a.download = "aryax_export.html";
   a.click();
 }
 
@@ -445,18 +439,26 @@ async function sendMessage(){
 function resetChat(){
   fetch("/api/clear",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId})}).catch(()=>{});
   sessionId=uid();firstMsg=true;imagePreview.style.display="none";
-  chat.innerHTML=`<div class="welcome" id="welcome"><div class="welcome-logo">⚡</div><h1>AryaX AI</h1>
-    <p class="welcome-tagline">The Ultimate All-Rounder AI — Coding, Images & Mastery</p>
-    <div class="welcome-stats"><div class="stat"><span class="stat-num">17+</span><span class="stat-label">AI Modes</span></div>
-    <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Knowledge</span></div>
-    <div class="stat"><span class="stat-num">10k</span><span class="stat-label">Daily Credits</span></div></div>
-    <div class="quick-grid">
-      <button class="quick-btn" data-msg="Write a Python web scraper with BeautifulSoup">💻 Python Scraper</button>
-      <button class="quick-btn" data-msg="Teach me ethical hacking basics">🔒 Learn Hacking</button>
-      <button class="quick-btn" data-msg="Build a SaaS landing page">🌐 Build Website</button>
-      <button class="quick-btn" data-msg="Solve: integrate x^2 * e^x dx">🧮 Solve Calculus</button>
-      <button class="quick-btn" data-msg="Create a Flappy Bird game in HTML/CSS/JS">🎮 Flappy Bird</button>
-      <button class="quick-btn" data-msg="Write essay on AI impact on society">📝 Write Essay</button>
+  chat.innerHTML=`<div class="welcome" id="welcome">
+    <div class="welcome-logo stagger-1" style="color: var(--text);">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:60%;height:60%;">
+        <path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/>
+      </svg>
+    </div>
+    <h1 class="stagger-1">AryaX AI</h1>
+    <p class="welcome-tagline stagger-2">The Ultimate All-Rounder AI — Coding, Images & Mastery</p>
+    <div class="welcome-stats stagger-2">
+      <div class="stat"><span class="stat-num">17+</span><span class="stat-label">AI Modes</span></div>
+      <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Knowledge</span></div>
+      <div class="stat"><span class="stat-num">10k</span><span class="stat-label">Daily Credits</span></div>
+    </div>
+    <div class="quick-grid stagger-3">
+      <button class="quick-btn" data-msg="Write a Python web scraper with BeautifulSoup"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Python Scraper</button>
+      <button class="quick-btn" data-msg="Teach me ethical hacking basics"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Learn Hacking</button>
+      <button class="quick-btn" data-msg="Build a SaaS landing page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Build Website</button>
+      <button class="quick-btn" data-msg="Solve: integrate x^2 * e^x dx"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Solve Calculus</button>
+      <button class="quick-btn" data-msg="Create a Flappy Bird game in HTML/CSS/JS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.544-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg> Flappy Bird</button>
+      <button class="quick-btn" data-msg="Write essay on AI impact on society"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Write Essay</button>
     </div></div>`;
   bindQuickBtns();closeSide();
 }
@@ -581,7 +583,7 @@ function speakText(text){
 }
 ttsToggle?.addEventListener("click",()=>{
   ttsEnabled=!ttsEnabled;
-  ttsToggle.textContent=ttsEnabled?"🔊":"🔇";
+  ttsToggle.innerHTML=ttsEnabled?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
   ttsToggle.classList.toggle("tts-on",ttsEnabled);
   if(!ttsEnabled)window.speechSynthesis?.cancel();
 });
@@ -615,7 +617,7 @@ function exportChatToFile(){
   if(chatHistory.length===0){alert("No chat to export!");return}
   let text="=== AryAX Chat Export ===\nDate: "+new Date().toLocaleString()+"\n\n";
   chatHistory.forEach(m=>{
-    text+=(m.role==="user"?"👤 YOU":"🤖 ARYAX")+":\n"+m.text+"\n\n";
+    text+=(m.role==="user"?"User":"AryaX")+":\n"+m.text+"\n\n";
   });
   const blob=new Blob([text],{type:"text/plain"});
   const a=document.createElement("a");
@@ -642,6 +644,64 @@ shareChatBtn?.addEventListener("click", async () => {
   } catch (err) {
     console.error('Error sharing:', err);
   }
+});
+
+// ===== PDF MARKETING EXPORT =====
+$("marketingPdfBtn")?.addEventListener("click", () => {
+  const invoiceHtml = `
+    <div style="padding: 40px; font-family: 'Inter', sans-serif; color: #1a1a2e; background: #fff;">
+      <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="color: #7c3aed; font-size: 42px; margin: 0;">AryaX AI</h1>
+        <p style="font-size: 18px; color: #6c757d; margin-top: 10px;">The World's Most Advanced Neural Interface</p>
+      </div>
+      <h2 style="color: #06b6d4; border-bottom: 2px solid #e9ecef; padding-bottom: 10px;">Why Choose AryaX?</h2>
+      <ul style="font-size: 16px; line-height: 1.8; color: #333; margin-bottom: 30px;">
+        <li><b>17+ AI Modes</b> tailored for coding, design, business, and education.</li>
+        <li><b>Unlimited Knowledge</b> powered by state-of-the-art language models.</li>
+        <li><b>High-Speed Processing</b> that outpaces competitors.</li>
+        <li><b>Enterprise-Grade Security</b> built-in from day one.</li>
+      </ul>
+      <h2 style="color: #06b6d4; border-bottom: 2px solid #e9ecef; padding-bottom: 10px;">Plans & Pricing</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr style="background: #f1f3f5; text-align: left;">
+          <th style="padding: 12px; border: 1px solid #dee2e6;">Plan</th>
+          <th style="padding: 12px; border: 1px solid #dee2e6;">Credits/Day</th>
+          <th style="padding: 12px; border: 1px solid #dee2e6;">Price</th>
+        </tr>
+        <tr>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">Basic</td>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">10,000</td>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">Free</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">AryaX Plus</td>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">25,000</td>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">₹99/mo</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">Premium Plus</td>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">Unlimited</td>
+          <td style="padding: 12px; border: 1px solid #dee2e6;">₹299/mo</td>
+        </tr>
+      </table>
+      <div style="text-align: center; margin-top: 50px; font-size: 14px; color: #888;">
+        <p>Generated by AryaX Systems - aryax.ai</p>
+      </div>
+    </div>
+  `;
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = invoiceHtml;
+  document.body.appendChild(tempDiv);
+  
+  html2pdf().set({
+    margin: 10,
+    filename: 'AryaX_Marketing_Pitch.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(tempDiv).save().then(() => {
+    document.body.removeChild(tempDiv);
+  });
 });
 
 // ===== CHAT HISTORY SAVE/LOAD =====
@@ -694,10 +754,62 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){closeHackMode();closeSide()}
 });
 
-// ===== PWA SERVICE WORKER =====
+// ===== PWA SERVICE WORKER & INSTALL =====
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
+
+let deferredPrompt;
+const installAppBtn = $("installAppBtn");
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if(installAppBtn) installAppBtn.style.display = "flex";
+});
+installAppBtn?.addEventListener("click", async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      installAppBtn.style.display = "none";
+    }
+    deferredPrompt = null;
+  }
+});
+
+// ===== MANUS-STYLE INTRO =====
+document.addEventListener("DOMContentLoaded", async () => {
+  const intro = $("introScreen");
+  const typing = $("introTyping");
+  const introLogo = $("introLogo");
+  
+  if (intro && typing && introLogo) {
+    if (!sessionStorage.getItem("aryax-intro-seen")) {
+      const lines = [
+        "Initializing Artificial Human Mind...", 
+        "Loading Neural Networks...", 
+        "Bypassing Security Protocols...", 
+        "AryaX System Online."
+      ];
+      for (let line of lines) {
+        typing.innerHTML = "";
+        for (let char of line) {
+          typing.innerHTML += char;
+          await new Promise(r => setTimeout(r, 40));
+        }
+        await new Promise(r => setTimeout(r, 400));
+      }
+      typing.style.display = "none";
+      introLogo.style.display = "block";
+      await new Promise(r => setTimeout(r, 1500));
+      intro.style.opacity = "0";
+      intro.style.visibility = "hidden";
+      sessionStorage.setItem("aryax-intro-seen", "true");
+    } else {
+      intro.style.display = "none";
+    }
+  }
+});
 
 // ===== PAYMENT (DIRECT UPI) =====
 upgradeBtn?.addEventListener("click", () => {
@@ -758,8 +870,9 @@ $('verifyUpiBtn')?.addEventListener("click", async () => {
     
     if(data.ok) {
       alert("Payment Verified! Welcome to the " + (selectedPlan === "plus" ? "Plus" : "Premium Plus") + " Plan.");
-      pricingOverlay.style.display = "none";
-      userPlan.textContent = selectedPlan === "plus" ? "⚡ AryaX Plus" : "💎 AryaX Premium Plus";
+      const sparkSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+      const diamondSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>';
+      userPlan.innerHTML = selectedPlan === "plus" ? sparkSvg + " AryaX Plus" : diamondSvg + " AryaX Premium Plus";
       creditCount.textContent = selectedPlan === "plus" ? "25000" : "∞";
     } else {
       alert("Error: " + (data.error || "Verification failed"));
@@ -782,13 +895,52 @@ function copyCode(btn){
 
 function runArtifact(btn, lang){
   const code = btn.closest("pre").querySelector("code").innerText;
+  window.lastArtifactCode = code;
   if(['html', 'css', 'javascript'].includes(lang.toLowerCase())){
     const fullHtml = lang.toLowerCase()==='html'?code:`<html><head><style>${lang.toLowerCase()==='css'?code:''}</style></head><body><div id="root"></div>${lang.toLowerCase()==='html'?'':code}${lang.toLowerCase()==='javascript'?`<script>${code}<\/script>`:''}</body></html>`;
+    window.lastArtifactCode = fullHtml;
     const blob = new Blob([fullHtml], {type: 'text/html'});
     const url = URL.createObjectURL(blob);
-    showArtifact(`<iframe src="${url}" style="width:100%;height:100%;border:none;background:#fff"></iframe>`, "Live Preview");
+    showArtifact(`
+      <div style="display:flex; justify-content:flex-end; padding:10px; border-bottom:1px solid var(--border); background:var(--surface);">
+        <button class="quick-btn" onclick="window.open('${url}', '_blank')">🚀 Open in New Tab</button>
+        <button class="quick-btn" onclick="downloadCode()" style="margin-left:8px;">💾 Save HTML</button>
+      </div>
+      <iframe src="${url}" style="width:100%;flex:1;border:none;background:#fff" sandbox="allow-scripts allow-forms allow-popups allow-modals allow-same-origin"></iframe>
+    `, "Web App Preview");
   } else if(lang.toLowerCase()==='python') {
-    showArtifact(`<div class="python-exec" style="padding:20px;color:#fff;font-family:'JetBrains Mono',monospace;"><h3>Python Engine</h3><pre><code style="color:#0f0;">${code}</code></pre><p style="color:#0cf;margin-top:10px;">> Initializing Python 3.11 environment...<br>> Executing code...<br>> Output will appear below:</p></div>`, "Python Runtime");
+    showArtifact(`
+      <div style="padding:20px;color:#fff;font-family:'JetBrains Mono',monospace;height:100%;display:flex;flex-direction:column;background:#000;">
+        <h3 style="color:#06b6d4;margin-bottom:10px;">Python Cloud Sandbox</h3>
+        <pre style="background:#111;padding:15px;border-radius:8px;border:1px solid #333;overflow-y:auto;max-height:30%;"><code style="color:#a78bfa;">${code}</code></pre>
+        <p style="color:#10b981;margin-top:10px;" id="pyStatus">> Initializing Pyodide Engine...</p>
+        <div id="pyOutput" style="flex:1;background:#0a0a0a;padding:15px;border:1px solid #222;border-radius:8px;margin-top:10px;overflow-y:auto;white-space:pre-wrap;color:#e4e4e7;"></div>
+      </div>
+    `, "Python Sandbox execution");
+    
+    // Execute python via Pyodide
+    (async function(){
+      const statusEl = document.getElementById('pyStatus');
+      const outputEl = document.getElementById('pyOutput');
+      try {
+        const pyodide = await initPyodide();
+        statusEl.innerHTML = "> Executing script...";
+        
+        // Capture stdout
+        pyodide.setStdout({ batched: (msg) => { outputEl.innerHTML += msg + "\\n"; } });
+        
+        await pyodide.runPythonAsync(code);
+        statusEl.innerHTML = "> Execution completed successfully.";
+        statusEl.style.color = "#10b981";
+      } catch (err) {
+        statusEl.innerHTML = "> Execution Failed.";
+        statusEl.style.color = "#ef4444";
+        outputEl.innerHTML += "\\nError: " + err.message;
+        outputEl.style.color = "#ef4444";
+      }
+    })();
+  } else {
+    showArtifact(`<div style="padding:40px;text-align:center;color:var(--text-muted);">Runtime for ${lang} is currently in beta and not yet available.</div>`, "Execution Unavailable");
   }
 }
 

@@ -525,6 +525,42 @@ def image():
         return jsonify({'error': str(e)}), 500
 
 
+# ===== VIDEO =====
+@app.post('/api/video')
+def video():
+    try:
+        ip = request.remote_addr
+        if not check_rate_limit(ip):
+            return jsonify({'error': 'Rate limit exceeded'}), 429
+
+        data = request.json
+        prompt = data.get('prompt', '').strip()
+        
+        if not prompt:
+            return jsonify({'error': 'Prompt required'}), 400
+
+        hf_key = os.getenv("HF_API_KEY")
+        if not hf_key:
+            return jsonify({'error': 'To use Video Studio, please get a free HF API Key from huggingface.co and add it to your .env file as HF_API_KEY.'}), 403
+
+        # HuggingFace API for Text-to-Video (ModelScope)
+        API_URL = "https://api-inference.huggingface.co/models/damo-vilab/text-to-video-ms-1.7b"
+        headers = {"Authorization": f"Bearer {hf_key}"}
+        
+        payload = {"inputs": prompt}
+        resp = requests.post(API_URL, headers=headers, json=payload, timeout=120)
+        
+        if resp.status_code == 200:
+            import base64
+            b64 = base64.b64encode(resp.content).decode('utf-8')
+            return jsonify({'videoUrl': f'data:video/mp4;base64,{b64}'})
+        else:
+            return jsonify({'error': f'Video API Error: {resp.text}'}), 500
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.post('/api/search')
 def web_search():
     """Web search via DuckDuckGo instant answers"""
@@ -671,7 +707,7 @@ if __name__ == '__main__':
     # Initialize db
     if not os.path.exists(DB_FILE) or os.path.getsize(DB_FILE) < 5:
         save_db({'users': {}})
-    port = int(os.environ.get('PORT', 3000))
+    port = int(os.environ.get('PORT', 5054))
     print(f"\nAryaX AI Production Server Starting on Port {port}...")
     app.run(host='0.0.0.0', port=port)
 
