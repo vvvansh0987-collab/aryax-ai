@@ -3,65 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AryaX AI — World's Most Advanced AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>AryaX — Neural Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2.1">
 </head>
-<body class="dark-theme">
-    <!-- AUTH OVERLAY -->
-    <div id="authOverlay" class="overlay">
-        <div class="auth-card">
-            <h1>AryaX AI</h1>
-            <p>Welcome to the 2065 Neural Interface</p>
-            <form id="loginForm">
-                <input type="text" id="loginUser" placeholder="Username" required>
-                <input type="password" id="loginPass" placeholder="Password" required>
-                <button type="submit" class="primary-btn">Initialize Connection</button>
-                <div id="loginError" class="error"></div>
-            </form>
-            <div class="auth-footer">
-                Don't have an account? <span onclick="alert('Signup is currently closed. Use demouser1/demo1234')">Request Access</span>
+<body class="manus-theme">
+    <!-- NEURAL OVERLAY (AUTH) -->
+    <div id="authOverlay" class="neural-overlay">
+        <div class="glass-card">
+            <div class="glow-orb"></div>
+            <div class="auth-content">
+                <div class="brand">
+                    <span class="brand-text">AryAX</span>
+                    <span class="version-tag">2065.v1</span>
+                </div>
+                <h2>Neural Interface</h2>
+                <p>Initialize your consciousness link.</p>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <input type="text" id="loginUser" placeholder="Neural ID" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="loginPass" placeholder="Access Key" required>
+                    </div>
+                    <button type="submit" class="elite-btn">Initialize Connection</button>
+                    <div id="loginError" class="error-msg"></div>
+                </form>
+                <div class="auth-footer">
+                    New mind? <span onclick="alert('Access restricted to AryaX Labs personnel. Use demo credentials.')">Request Node Access</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- MAIN APP -->
-    <div id="mainApp" style="display:none;">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <span class="logo">AryaX</span>
-                <button id="newChat" class="icon-btn">＋</button>
+    <!-- MAIN INTERFACE -->
+    <div id="mainApp" class="app-container" style="display:none;">
+        <aside class="side-panel">
+            <div class="panel-header">
+                <div class="mini-logo">AX</div>
+                <button id="newChat" class="pill-btn">＋ New Session</button>
             </div>
-            <div id="recentList" class="recent-list"></div>
-            <div class="sidebar-footer">
-                <span id="userName">User</span>
-                <button id="logoutBtn" class="link-btn">Logout</button>
+            <nav id="recentList" class="session-list"></nav>
+            <div class="panel-footer">
+                <div class="user-pill">
+                    <div class="avatar" id="userName">AX</div>
+                    <button id="logoutBtn" class="logout-icon">⏻</button>
+                </div>
             </div>
-        </div>
+        </aside>
 
-        <main class="content">
-            <div class="topbar">
-                <span id="modeLabel">General Intelligence</span>
-                <div class="top-actions">
-                    <span id="creditCount" class="badge">0 Credits</span>
+        <main class="chat-viewport">
+            <header class="top-nav">
+                <div class="mode-indicator">
+                    <span class="pulse"></span>
+                    <span id="modeLabel">Neural Core Active</span>
+                </div>
+                <div class="stats">
+                    <span id="creditCount" class="credit-badge">0 Credits</span>
+                </div>
+            </header>
+
+            <div id="chat" class="message-stream">
+                <div class="welcome-hero">
+                    <h1>I am AryAX.</h1>
+                    <p>The first Artificial Human Mind. How shall we evolve today?</p>
                 </div>
             </div>
-            <div id="chat" class="chat-area">
-                <div class="welcome-msg">
-                    <h2>Hello, I am AryaX.</h2>
-                    <p>How can I assist your mind today?</p>
+
+            <footer class="input-zone">
+                <div class="floating-pill">
+                    <textarea id="input" placeholder="Transmit thoughts..." rows="1"></textarea>
+                    <div class="input-actions">
+                        <button id="send" class="send-pill">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="input-container">
-                <div class="input-wrap">
-                    <textarea id="input" placeholder="Transmit your thoughts..." rows="1"></textarea>
-                    <button id="send" class="send-btn">▲</button>
-                </div>
-            </div>
+                <div class="footer-legal">AryaX v2.5 — Zero-Fault Execution Protocol</div>
+            </footer>
         </main>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=2.1"></script>
 </body>
 </html>
