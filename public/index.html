@@ -169,17 +169,13 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="menu-btn" id="menuBtn">☰</button>
+          <span class="heartbeat-dot" id="heartbeatDot" title="AryaX Online"></span>
           <span class="mode-label" id="modeLabel">General Chat</span>
         </div>
         <div class="topbar-center">
           <span class="plan-badge" id="userPlan"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Free Plan</span>
         </div>
         <div class="topbar-right">
-          <span class="credit-pill" id="creditPill">
-            <span class="credit-cost" id="creditCost">9<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
-            <span class="credit-divider">|</span>
-            <span class="credit-count" id="creditCount">10000</span> credits
-          </span>
           <button class="tts-btn" id="ttsToggle" title="Text to Speech"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>
           <span class="user-name" id="userName">User</span>
           <div class="avatar" id="userAvatar">U</div>
@@ -239,7 +235,7 @@
           </div>
         </div>
       </div>
-      <input type="file" id="fileUpload" accept=".txt,.py,.js,.html,.css,.json,.csv,.md,.log,.xml,.java,.c,.cpp,.rs" style="display:none">
+      <input type="file" id="fileUpload" accept=".txt,.py,.js,.html,.css,.json,.csv,.md,.log,.xml,.java,.c,.cpp,.rs,.pdf" style="display:none">
     </main>
 
     <!-- ARTIFACT SIDEBAR -->
@@ -250,6 +246,28 @@
       </div>
       <div class="artifact-body" id="artifactBody"></div>
     </aside>
+
+    <!-- AryaX Live Avatar Orb -->
+    <div class="aryax-avatar-orb" id="aryaxOrb" title="AryaX is alive">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/>
+      </svg>
+    </div>
+
+    <!-- Orb Tooltip -->
+    <div class="orb-tooltip" id="orbTooltip">
+      <strong>🧠 AryaX Neural Status</strong>
+      <span id="orbStatusText">Idle — Ready to assist</span>
+    </div>
+
+    <!-- TTS Speaking Bar -->
+    <div class="tts-bar" id="ttsBar">
+      <div class="voice-wave">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      AryaX is speaking...
+      <button class="stop-btn" id="ttsStopBtn">■ Stop</button>
+    </div>
   </div>
 
   <!-- ===== HACK MODE OVERLAY ===== -->

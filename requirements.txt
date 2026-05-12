@@ -9,3 +9,5 @@ lxml
 gunicorn
 requests
 pillow
+PyPDF2
+pytz

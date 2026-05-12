@@ -86,15 +86,21 @@ $("googleBtn")?.addEventListener("click", () => {
   loginSuccess("google_user_" + Math.floor(Math.random()*1000), 10000);
 });
 
-function loginSuccess(username,credits){
-  currentUser=username;
-  localStorage.setItem("aryax-user",username);
-  authOverlay.style.display="none";
-  mainApp.style.display="flex";
-  $("userName").textContent=username;
-  $("userAvatar").textContent=username[0].toUpperCase();
-  creditCount.textContent=credits;
+function loginSuccess(username, credits){
+  currentUser = username;
+  localStorage.setItem('aryax-user', username);
+  authOverlay.style.display = 'none';
+  mainApp.style.display = 'flex';
+  $('userName').textContent = username;
+  $('userAvatar').textContent = username[0].toUpperCase();
+  if(creditCount) creditCount.textContent = credits;
   input.focus();
+  // Load cloud data
+  setTimeout(() => {
+    loadCloudHistory();
+    loadUserMemory();
+    loadOnlineCount();
+  }, 500);
 }
 
 logoutBtn?.addEventListener("click",()=>{
@@ -127,7 +133,7 @@ function applyTheme(dark){
 }
 themeToggle?.addEventListener("click",()=>applyTheme(!isDark));
 const savedTheme = localStorage.getItem("aryax-theme");
-applyTheme(savedTheme === "dark"); // Default to light if nothing saved
+applyTheme(savedTheme !== "light"); // Default DARK unless user explicitly chose light
 
 // ===== SIDEBAR =====
 menuBtn?.addEventListener("click",()=>{sidebar.classList.add("open");overlay.classList.add("show")});
@@ -600,17 +606,28 @@ const personas={
 };
 personaSelect?.addEventListener("change",()=>{currentPersona=personaSelect.value});
 
-// ===== FILE UPLOAD =====
-fileUpload?.addEventListener("change",async e=>{
-  const file=e.target.files[0];
-  if(!file)return;
-  if(file.size>500000){alert("File too large! Max 500KB");return}
-  const text=await file.text();
-  const preview=text.length>2000?text.substring(0,2000)+"\n...(truncated)":text;
-  input.value=`Analyze this file (${file.name}):\n\n\`\`\`\n${preview}\n\`\`\``;
-  input.style.height="auto";input.style.height=Math.min(input.scrollHeight,150)+"px";
-  fileUpload.value="";
-  input.focus();
+// ===== FILE UPLOAD (PDF + All Files via Backend) =====
+const fileBtn = $("fileBtn");
+fileBtn?.addEventListener("click", () => fileUpload?.click());
+fileUpload?.addEventListener("change", async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { alert("File too large! Max 10MB"); return; }
+
+  addTyping();
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const r = await fetch('/api/upload', { method: 'POST', body: formData });
+    const d = await r.json();
+    removeTyping();
+    if (d.error) { addBotMessage(`❌ ${d.error}`); return; }
+    input.value = `Analyze this file (${d.filename}):\n\n\`\`\`\n${d.content}\n\`\`\``;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 150) + 'px';
+    input.focus();
+  } catch { removeTyping(); addBotMessage('File upload failed.'); }
+  fileUpload.value = '';
 });
 
 function exportChatToFile(){
@@ -704,43 +721,65 @@ $("marketingPdfBtn")?.addEventListener("click", () => {
   });
 });
 
-// ===== CHAT HISTORY SAVE/LOAD =====
-function saveChatToHistory(title){
-  const saved=JSON.parse(localStorage.getItem("aryax-chats")||"[]");
-  saved.unshift({id:sessionId,title:title.substring(0,40),messages:chatHistory.slice(),date:Date.now()});
-  if(saved.length>20)saved.length=20;
-  localStorage.setItem("aryax-chats",JSON.stringify(saved));
+// ===== CLOUD CHAT HISTORY =====
+async function saveChatToHistory(title) {
+  // Local save
+  const saved = JSON.parse(localStorage.getItem('aryax-chats') || '[]');
+  const existing = saved.findIndex(c => c.id === sessionId);
+  const entry = { id: sessionId, title: title.substring(0, 40), messages: chatHistory.slice(), date: Date.now() };
+  if (existing >= 0) saved[existing] = entry; else saved.unshift(entry);
+  if (saved.length > 30) saved.length = 30;
+  localStorage.setItem('aryax-chats', JSON.stringify(saved));
   renderChatHistory();
+  // Cloud save
+  if (currentUser) {
+    fetch('/api/history/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: currentUser, chatId: sessionId, title, messages: chatHistory })
+    }).catch(() => {});
+  }
 }
-function renderChatHistory(){
-  const saved=JSON.parse(localStorage.getItem("aryax-chats")||"[]");
-  recentList.innerHTML="";
-  if(!saved.length){recentList.innerHTML='<p class="empty-hint">No saved chats</p>';return}
-  saved.forEach((ch,i)=>{
-    const item=document.createElement("div");
-    item.className="recent-item";
-    item.innerHTML=`<span>${ch.title||"Chat "+(i+1)}</span><button class="del-btn" title="Delete">✕</button>`;
-    item.querySelector("span").addEventListener("click",()=>loadChat(ch));
-    item.querySelector(".del-btn").addEventListener("click",e=>{e.stopPropagation();deleteChat(i)});
+
+function renderChatHistory() {
+  const saved = JSON.parse(localStorage.getItem('aryax-chats') || '[]');
+  recentList.innerHTML = '';
+  if (!saved.length) { recentList.innerHTML = '<p class="empty-hint">No saved chats</p>'; return; }
+  saved.forEach((ch, i) => {
+    const item = document.createElement('div'); item.className = 'recent-item';
+    item.innerHTML = `<span>${ch.title || 'Chat ' + (i+1)}</span><button class="del-btn" title="Delete">✕</button>`;
+    item.querySelector('span').addEventListener('click', () => loadChat(ch));
+    item.querySelector('.del-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(i); });
     recentList.appendChild(item);
   });
 }
-function loadChat(ch){
-  sessionId=ch.id||uid();firstMsg=false;chatHistory=ch.messages||[];
-  $("welcome")?.remove();
-  chat.innerHTML="";
-  chatHistory.forEach(m=>{
-    if(m.role==="user")addUserMessage(m.text);
-    else addBotMessage(m.text);
-  });
+function loadChat(ch) {
+  sessionId = ch.id || uid(); firstMsg = false; chatHistory = ch.messages || [];
+  $('welcome')?.remove(); chat.innerHTML = '';
+  chatHistory.forEach(m => { if (m.role === 'user') addUserMessage(m.text); else addBotMessage(m.text); });
   closeSide();
 }
-function deleteChat(index){
-  const saved=JSON.parse(localStorage.getItem("aryax-chats")||"[]");
-  saved.splice(index,1);
-  localStorage.setItem("aryax-chats",JSON.stringify(saved));
+function deleteChat(index) {
+  const saved = JSON.parse(localStorage.getItem('aryax-chats') || '[]');
+  const ch = saved[index];
+  saved.splice(index, 1);
+  localStorage.setItem('aryax-chats', JSON.stringify(saved));
+  if (currentUser && ch) fetch('/api/history/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: currentUser, chatId: ch.id }) }).catch(() => {});
   renderChatHistory();
 }
+
+// Load cloud history on login
+async function loadCloudHistory() {
+  if (!currentUser) return;
+  try {
+    const r = await fetch(`/api/history/load?username=${currentUser}`);
+    const d = await r.json();
+    if (d.chats && d.chats.length) {
+      localStorage.setItem('aryax-chats', JSON.stringify(d.chats.map(c => ({ id: c.id, title: c.title, messages: c.messages, date: new Date(c.updated).getTime() }))));
+      renderChatHistory();
+    }
+  } catch {}
+}
+
 renderChatHistory();
 
 // ===== KEYBOARD SHORTCUTS =====
@@ -966,3 +1005,314 @@ function setInput(text){
   input.style.height = 'auto';
   input.style.height = input.scrollHeight + 'px';
 }
+
+// ===== ARYAX ALIVE — HUMAN MIND SYSTEM =====
+const orb = $("aryaxOrb");
+const orbTooltip = $("orbTooltip");
+const orbStatusText = $("orbStatusText");
+const ttsBar = $("ttsBar");
+const ttsStopBtn = $("ttsStopBtn");
+
+// Orb States
+function setOrbState(state) {
+  if (!orb) return;
+  orb.classList.remove("speaking", "thinking");
+  if (state === "speaking") {
+    orb.classList.add("active", "speaking");
+    orb.innerHTML = `<div class="voice-wave"><span></span><span></span><span></span><span></span><span></span></div>`;
+    if (ttsEnabled) ttsBar && ttsBar.classList.add("active");
+  } else if (state === "thinking") {
+    orb.classList.add("active", "thinking");
+    orb.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/></svg>`;
+    ttsBar && ttsBar.classList.remove("active");
+  } else {
+    // Idle — hide orb completely
+    orb.classList.remove("active");
+    orb.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/></svg>`;
+    ttsBar && ttsBar.classList.remove("active");
+  }
+}
+
+// Orb click — no tooltip, just nice ripple feedback
+orb?.addEventListener("click", () => {
+  orb.style.transform = "scale(0.9)";
+  setTimeout(() => orb.style.transform = "", 150);
+});
+
+// Stop TTS
+ttsStopBtn?.addEventListener("click", () => {
+  window.speechSynthesis?.cancel();
+  setOrbState("idle");
+});
+
+// Emotion Detection from AI response text
+function detectEmotion(text) {
+  const t = text.toLowerCase();
+  if (/error|fail|cannot|sorry|apologize|problem|issue/i.test(t)) return { cls: "emotion-serious", icon: "⚠️", label: "Serious" };
+  if (/amazing|incredible|fantastic|wonderful|excellent|brilliant|perfect|wow|great/i.test(t)) return { cls: "emotion-excited", icon: "🔥", label: "Excited" };
+  if (/happy|glad|sure|absolutely|of course|love|enjoy|pleasure|welcome/i.test(t)) return { cls: "emotion-happy", icon: "😊", label: "Happy" };
+  if (/think|analyze|consider|reasoning|step|process|calculating|understand/i.test(t)) return { cls: "emotion-thinking", icon: "🧠", label: "Thinking" };
+  return { cls: "emotion-calm", icon: "✨", label: "Calm" };
+}
+
+// Override createBotMessage to add heartbeat dot + emotion
+const _origCreateBotMsg = createBotMessage;
+window.createBotMessage = function() {
+  $("typingWrap")?.remove();
+  const wrap = document.createElement("div"); wrap.className = "msg-wrap bot-wrap";
+  const label = document.createElement("div"); label.className = "msg-label aryax-label";
+  label.innerHTML = `<span class="heartbeat-dot" style="width:6px;height:6px;margin-right:4px;"></span>ARYAX`;
+  const msg = document.createElement("div"); msg.className = "msg bot-msg";
+  msg.innerHTML = '<span class="streaming-cursor"></span>';
+  wrap.appendChild(label); wrap.appendChild(msg); chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+  setOrbState("thinking");
+  return msg;
+};
+
+// Override addBotMessage to add emotion badge
+const _origAddBotMsg = addBotMessage;
+window.addBotMessage = function(text) {
+  removeTyping();
+  const wrap = document.createElement("div"); wrap.className = "msg-wrap bot-wrap";
+  const emotion = detectEmotion(text);
+  const label = document.createElement("div"); label.className = "msg-label aryax-label";
+  label.innerHTML = `<span class="heartbeat-dot" style="width:6px;height:6px;margin-right:4px;"></span>ARYAX<span class="emotion-badge ${emotion.cls}">${emotion.icon} ${emotion.label}</span>`;
+  const msg = document.createElement("div"); msg.className = "msg bot-msg";
+  msg.innerHTML = renderMarkdown(text);
+  if (/\<html[\s\S]*\<\/html\>/i.test(text) || text.includes("<!DOCTYPE html")) {
+    const btn = document.createElement("button"); btn.textContent = "▶ Run"; btn.className = "copy-btn";
+    btn.style.cssText = "margin-top:8px;padding:6px 14px;font-size:12px;";
+    btn.onclick = () => runGame(text); msg.appendChild(btn);
+  }
+  wrap.appendChild(label); wrap.appendChild(msg); chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+};
+
+// Enhanced speakText with orb animation
+const _origSpeakText = speakText;
+window.speakText = function(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+
+  // Auto-enable TTS if user hasn't explicitly disabled
+  if (!ttsEnabled) {
+    // silent — don't speak unless TTS is on
+    setOrbState("idle");
+    return;
+  }
+
+  const clean = text.replace(/```[\s\S]*?```/g,'code block').replace(/[#*_~`>|]/g,'').replace(/\[.*?\]\(.*?\)/g,'link').substring(0, 500);
+  if (!clean.trim()) { setOrbState("idle"); return; }
+
+  // Pick best Indian English voice
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.name.includes("Google") && v.lang.includes("en")) ||
+                    voices.find(v => v.lang === "en-IN") ||
+                    voices.find(v => v.lang.startsWith("en")) || voices[0];
+
+  const u = new SpeechSynthesisUtterance(clean);
+  u.rate = 1.0; u.pitch = 1.05; u.volume = 1;
+  if (preferred) u.voice = preferred;
+
+  u.onstart = () => setOrbState("speaking");
+  u.onend   = () => setOrbState("idle");
+  u.onerror  = () => setOrbState("idle");
+  window.speechSynthesis.speak(u);
+};
+
+// Hook into sendMessage to set orb thinking while typing
+const _origSendMessage = sendMessage;
+window.sendMessage = async function() {
+  setOrbState("thinking");
+  await _origSendMessage();
+  // idle state is set by speakText or after reply
+  if (!ttsEnabled) setOrbState("idle");
+};
+
+// When [DONE] received in streaming — add emotion badge
+// This is handled via the overridden createBotMessage/addBotMessage pattern
+// Additionally patch the streaming done handler
+const _origRenderMarkdown = renderMarkdown;
+window._humanPatchDone = function(fullText, botEl) {
+  const emotion = detectEmotion(fullText);
+  // Find the label of this message's wrapper
+  const wrap = botEl.closest(".bot-wrap");
+  const label = wrap?.querySelector(".msg-label");
+  if (label && !label.querySelector(".emotion-badge")) {
+    label.innerHTML = `<span class="heartbeat-dot" style="width:6px;height:6px;margin-right:4px;"></span>ARYAX<span class="emotion-badge ${emotion.cls}">${emotion.icon} ${emotion.label}</span>`;
+  }
+  setOrbState("idle");
+};
+
+// Patch the streaming DONE event to call human patch
+// We hook into the existing sendMessage flow via MutationObserver on chat
+// to catch when streaming cursor is removed and apply emotion
+const chatObserver = new MutationObserver(() => {
+  document.querySelectorAll(".bot-wrap").forEach(wrap => {
+    if (!wrap.dataset.emotionApplied && !wrap.querySelector(".streaming-cursor")) {
+      const label = wrap.querySelector(".msg-label");
+      const msgEl = wrap.querySelector(".bot-msg");
+      if (label && msgEl && msgEl.textContent.trim()) {
+        const emotion = detectEmotion(msgEl.textContent);
+        if (!label.querySelector(".emotion-badge")) {
+          label.innerHTML = `<span class="heartbeat-dot" style="width:6px;height:6px;margin-right:4px;"></span>ARYAX<span class="emotion-badge ${emotion.cls}">${emotion.icon} ${emotion.label}</span>`;
+        }
+        wrap.dataset.emotionApplied = "1";
+      }
+    }
+  });
+});
+if (chat) chatObserver.observe(chat, { childList: true, subtree: true });
+
+// Set idle initially
+setOrbState("idle");
+console.log("🧠 AryaX Human Mind System — Online");
+
+// ===== MEMORY SYSTEM =====
+let userMemory = {};
+async function loadUserMemory() {
+  if (!currentUser) return;
+  try {
+    const r = await fetch(`/api/memory/load?username=${currentUser}`);
+    const d = await r.json();
+    userMemory = d.memory || {};
+    // Inject memory into system if user has a name set
+    if (userMemory.name) {
+      console.log(`🧠 Memory: User is ${userMemory.name}`);
+    }
+  } catch {}
+}
+async function saveUserMemory(key, value) {
+  userMemory[key] = value;
+  if (!currentUser) return;
+  try {
+    await fetch('/api/memory/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: currentUser, memory: userMemory })
+    });
+  } catch {}
+}
+// Auto-detect name from chat messages
+function extractNameFromMessage(msg) {
+  const m = msg.match(/(?:my name is|i am|i'm|call me)\s+([A-Z][a-z]+)/i);
+  if (m) { saveUserMemory('name', m[1]); }
+}
+
+// ===== REFERRAL SYSTEM =====
+async function showReferralCode() {
+  if (!currentUser) { alert('Please login first'); return; }
+  try {
+    const r = await fetch('/api/referral/generate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: currentUser })
+    });
+    const d = await r.json();
+    if (d.code) {
+      const msg = `🎁 Your Referral Code: ${d.code}\n\nShare with friends!\n✅ You earn +500 credits per referral\n✅ Friend gets +200 credits\n\nTotal referrals: ${d.count}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(d.code);
+        alert(msg + '\n\n📋 Code copied to clipboard!');
+      } else {
+        alert(msg);
+      }
+    }
+  } catch { alert('Could not generate referral code'); }
+}
+// Add referral button to sidebar tools
+(function addReferralBtn() {
+  const toolSection = document.querySelector('.sidebar-section:nth-child(3)');
+  if (!toolSection) return;
+  const btn = document.createElement('button');
+  btn.className = 'tool-btn'; btn.id = 'referralBtn';
+  btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Referral Code`;
+  btn.addEventListener('click', showReferralCode);
+  toolSection.appendChild(btn);
+})();
+
+// ===== ONLINE COUNT =====
+async function loadOnlineCount() {
+  try {
+    const r = await fetch('/api/online');
+    const d = await r.json();
+    const dot = $('heartbeatDot');
+    if (dot) dot.title = `${d.online} user${d.online !== 1 ? 's' : ''} online`;
+  } catch {}
+}
+// Refresh online count every 60s
+setInterval(loadOnlineCount, 60000);
+
+// ===== ANTI-SCREENSHOT & SECURITY SHIELD =====
+(function initSecurity() {
+  // Create screen protect overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'screenProtectOverlay';
+  overlay.innerHTML = '<span>🔒</span><span>AryaX — Content Protected</span><small style="font-size:14px;opacity:0.6;">Screenshots are disabled</small>';
+  overlay.style.cssText = 'display:none;position:fixed;inset:0;background:#000;z-index:999999;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-size:24px;font-weight:700;gap:16px;';
+  document.body.appendChild(overlay);
+
+  function flashProtect(ms = 1500) {
+    overlay.style.display = 'flex';
+    setTimeout(() => overlay.style.display = 'none', ms);
+  }
+
+  // Block PrintScreen & screenshot shortcuts
+  document.addEventListener('keydown', e => {
+    // PrintScreen
+    if (e.key === 'PrintScreen') {
+      e.preventDefault();
+      flashProtect();
+      navigator.clipboard?.writeText('').catch(() => {});
+      return;
+    }
+    // Ctrl+P (Print)
+    if (e.ctrlKey && e.key === 'p') {
+      e.preventDefault();
+      flashProtect(800);
+      return;
+    }
+    // Ctrl+Shift+S / Ctrl+Shift+I (DevTools / Save As)
+    if (e.ctrlKey && e.shiftKey && ['s','S','i','I'].includes(e.key)) {
+      e.preventDefault();
+      flashProtect(800);
+      return;
+    }
+    // F12 DevTools — warn only (can't fully block)
+    if (e.key === 'F12') {
+      e.preventDefault();
+      console.clear();
+      return;
+    }
+  });
+
+  // Disable right-click on main app (not on text inputs)
+  document.addEventListener('contextmenu', e => {
+    const tag = e.target.tagName.toLowerCase();
+    if (!['textarea', 'input'].includes(tag)) {
+      e.preventDefault();
+    }
+  });
+
+  // Screen Capture API detection
+  if (navigator.mediaDevices?.getDisplayMedia) {
+    const _orig = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
+    navigator.mediaDevices.getDisplayMedia = async (...args) => {
+      flashProtect(3000);
+      return _orig(...args);
+    };
+  }
+
+  // Tab visibility — blur content when tab is hidden (prevent Alt+Tab screenshot)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      document.body.style.filter = 'blur(20px)';
+    } else {
+      document.body.style.filter = '';
+    }
+  });
+
+  console.clear();
+  console.log('%c🔒 AryaX Security Shield Active', 'color:#10b981;font-size:16px;font-weight:bold;');
+})();
+
+

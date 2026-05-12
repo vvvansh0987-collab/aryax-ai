@@ -18,6 +18,17 @@ load_dotenv()
 
 app = Flask(__name__, static_folder='public')
 
+# ===== SECURITY HEADERS =====
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+    return response
+
 # Support both single key and comma-separated multiple keys
 _keys_raw = os.getenv("GEMINI_API_KEYS", os.getenv("GEMINI_API_KEY", ""))
 GEMINI_KEYS = [k.strip() for k in _keys_raw.split(",") if k.strip()]
@@ -51,11 +62,11 @@ rate_limits = {}
 
 # ===== CREDIT COSTS =====
 CREDIT_COSTS = {
-    'chat': 9, 'code': 15, 'document': 12, 'excel': 12,
-    'email': 10, 'study': 10, 'game': 20, 'cyber': 12,
-    'webdev': 18, 'appidea': 10, 'math': 12, 'essay': 15,
-    'design': 12, 'aitutor': 12, 'business': 15, 'fitness': 10,
-    'translate': 8, 'image': 50
+    'chat': 0, 'code': 0, 'document': 0, 'excel': 0,
+    'email': 0, 'study': 0, 'game': 0, 'cyber': 0,
+    'webdev': 0, 'appidea': 0, 'math': 0, 'essay': 0,
+    'design': 0, 'aitutor': 0, 'business': 0, 'fitness': 0,
+    'translate': 0, 'image': 0
 }
 DAILY_LIMIT = 10000
 
@@ -157,6 +168,42 @@ def check_rate_limit(ip):
         return False
     rate_limits[ip].append(now)
     return True
+
+
+# ===== BRUTE FORCE PROTECTION =====
+failed_logins = {}  # {ip: {'count': 0, 'lockout_until': 0}}
+
+def check_brute_force(ip):
+    now = time.time()
+    data = failed_logins.get(ip, {'count': 0, 'lockout_until': 0})
+    if now < data['lockout_until']:
+        mins = int((data['lockout_until'] - now) / 60) + 1
+        return False, f'Too many failed attempts. Try again in {mins} minute(s).'
+    return True, ''
+
+def record_failed_login(ip):
+    now = time.time()
+    data = failed_logins.get(ip, {'count': 0, 'lockout_until': 0})
+    data['count'] = data.get('count', 0) + 1
+    if data['count'] >= 5:
+        data['lockout_until'] = now + 900  # 15 min lockout
+        data['count'] = 0
+    failed_logins[ip] = data
+
+def reset_failed_login(ip):
+    failed_logins.pop(ip, None)
+
+def sanitize_input(text, max_len=500):
+    """Strip dangerous characters and limit length"""
+    if not isinstance(text, str):
+        return ''
+    text = text.strip()[:max_len]
+    # Block script injection
+    dangerous = ['<script', 'javascript:', 'onerror=', 'onload=', 'eval(', 'document.cookie']
+    for d in dangerous:
+        if d.lower() in text.lower():
+            return ''
+    return text
 
 
 def cleanup_sessions():
@@ -278,15 +325,25 @@ def signup():
 
 @app.post('/api/login')
 def login():
+    ip = request.remote_addr
+    # Brute force check
+    ok, msg = check_brute_force(ip)
+    if not ok:
+        return jsonify({'error': msg}), 429
+
     data = request.json
-    username = data.get('username', '').strip().lower()
+    username = sanitize_input(data.get('username', ''), 50).lower()
     password = data.get('password', '')
+    if not username or not password:
+        return jsonify({'error': 'Missing credentials'}), 400
 
     db = load_db()
     user = db['users'].get(username)
     if not user or user['password'] != hash_pass(password):
+        record_failed_login(ip)
         return jsonify({'error': 'Invalid username or password'}), 401
 
+    reset_failed_login(ip)
     credits = get_user_credits(username)
     return jsonify({
         'ok': True,
@@ -701,6 +758,209 @@ def upgrade_plan():
         save_db(db)
         return jsonify({'ok': True, 'plan': plan})
     return jsonify({'error': 'User not found'}), 404
+
+
+# ===== CLOUD CHAT HISTORY =====
+@app.post('/api/history/save')
+def save_history():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    chat_id = data.get('chatId', '')
+    title = data.get('title', 'Untitled Chat')[:60]
+    messages = data.get('messages', [])
+    if not username or not chat_id:
+        return jsonify({'error': 'Missing fields'}), 400
+    db = load_db()
+    if username not in db['users']:
+        return jsonify({'error': 'User not found'}), 404
+    if 'chats' not in db['users'][username]:
+        db['users'][username]['chats'] = {}
+    db['users'][username]['chats'][chat_id] = {
+        'title': title,
+        'messages': messages[-50:],  # Keep last 50 messages
+        'updated': str(datetime.now())
+    }
+    # Keep only last 30 chats
+    chats = db['users'][username]['chats']
+    if len(chats) > 30:
+        oldest = sorted(chats.items(), key=lambda x: x[1].get('updated',''))[0][0]
+        del chats[oldest]
+    save_db(db)
+    return jsonify({'ok': True})
+
+@app.get('/api/history/load')
+def load_history():
+    username = request.args.get('username', '').strip().lower()
+    if not username:
+        return jsonify({'error': 'Missing username'}), 400
+    db = load_db()
+    user = db['users'].get(username)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    chats = user.get('chats', {})
+    result = [{'id': k, 'title': v['title'], 'updated': v['updated'], 'messages': v['messages']} 
+              for k, v in chats.items()]
+    result.sort(key=lambda x: x['updated'], reverse=True)
+    return jsonify({'chats': result})
+
+@app.post('/api/history/delete')
+def delete_history():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    chat_id = data.get('chatId', '')
+    db = load_db()
+    if username in db['users'] and 'chats' in db['users'][username]:
+        db['users'][username]['chats'].pop(chat_id, None)
+        save_db(db)
+    return jsonify({'ok': True})
+
+
+# ===== USER MEMORY SYSTEM =====
+@app.post('/api/memory/save')
+def save_memory():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    memory = data.get('memory', {})  # {name, language, interests, etc}
+    if not username:
+        return jsonify({'error': 'Missing username'}), 400
+    db = load_db()
+    if username not in db['users']:
+        return jsonify({'error': 'User not found'}), 404
+    db['users'][username]['memory'] = memory
+    save_db(db)
+    return jsonify({'ok': True})
+
+@app.get('/api/memory/load')
+def load_memory():
+    username = request.args.get('username', '').strip().lower()
+    if not username:
+        return jsonify({'error': 'Missing username'}), 400
+    db = load_db()
+    user = db['users'].get(username)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify({'memory': user.get('memory', {})})
+
+
+# ===== REFERRAL SYSTEM =====
+@app.post('/api/referral/generate')
+def generate_referral():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    if not username:
+        return jsonify({'error': 'Missing username'}), 400
+    db = load_db()
+    user = db['users'].get(username)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    # Generate or return existing code
+    if not user.get('referral_code'):
+        code = 'AX' + hashlib.md5(username.encode()).hexdigest()[:6].upper()
+        db['users'][username]['referral_code'] = code
+        db['users'][username]['referral_count'] = 0
+        save_db(db)
+    return jsonify({
+        'code': db['users'][username]['referral_code'],
+        'count': db['users'][username].get('referral_count', 0),
+        'reward_per_referral': 500
+    })
+
+@app.post('/api/referral/use')
+def use_referral():
+    data = request.json
+    new_user = data.get('username', '').strip().lower()
+    code = data.get('code', '').strip().upper()
+    if not new_user or not code:
+        return jsonify({'error': 'Missing fields'}), 400
+    db = load_db()
+    # Find referrer
+    referrer = None
+    for uname, udata in db['users'].items():
+        if udata.get('referral_code') == code:
+            referrer = uname
+            break
+    if not referrer:
+        return jsonify({'error': 'Invalid referral code'}), 404
+    if referrer == new_user:
+        return jsonify({'error': 'Cannot use your own code'}), 400
+    # Check if already used a code
+    if db['users'][new_user].get('referral_used'):
+        return jsonify({'error': 'Already used a referral code'}), 400
+    # Reward referrer +500 credits
+    db['users'][referrer]['referral_count'] = db['users'][referrer].get('referral_count', 0) + 1
+    db['users'][referrer]['credits'] = db['users'][referrer].get('credits', 0) + 500
+    # Reward new user +200 credits
+    db['users'][new_user]['credits'] = db['users'][new_user].get('credits', 0) + 200
+    db['users'][new_user]['referral_used'] = code
+    save_db(db)
+    return jsonify({'ok': True, 'message': 'Referral applied! +200 credits added.'})
+
+
+# ===== PDF / FILE UPLOAD =====
+@app.post('/api/upload')
+def upload_file():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+        file = request.files['file']
+        filename = file.filename.lower()
+        content = ''
+
+        if filename.endswith('.pdf'):
+            try:
+                import PyPDF2
+                reader = PyPDF2.PdfReader(file)
+                for page in reader.pages[:10]:  # Max 10 pages
+                    content += page.extract_text() or ''
+                content = content[:4000]
+            except Exception as e:
+                return jsonify({'error': f'PDF read failed: {str(e)}'}), 500
+
+        elif filename.endswith(('.txt', '.py', '.js', '.html', '.css', '.json', '.md', '.csv')):
+            content = file.read().decode('utf-8', errors='ignore')[:4000]
+
+        elif filename.endswith(('.png', '.jpg', '.jpeg', '.webp')):
+            return jsonify({'content': f'[Image uploaded: {file.filename}]', 'type': 'image'})
+
+        else:
+            content = file.read().decode('utf-8', errors='ignore')[:4000]
+
+        if not content.strip():
+            return jsonify({'error': 'Could not extract text from file'}), 400
+
+        return jsonify({'content': content, 'filename': file.filename})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ===== USER PROFILE =====
+@app.get('/api/profile')
+def get_profile():
+    username = request.args.get('username', '').strip().lower()
+    if not username:
+        return jsonify({'error': 'Missing username'}), 400
+    db = load_db()
+    user = db['users'].get(username)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify({
+        'username': username,
+        'plan': user.get('plan', 'free'),
+        'credits': user.get('credits', 0),
+        'total_chats': user.get('total_chats', 0),
+        'created': user.get('created', '')[:10],
+        'referral_code': user.get('referral_code', ''),
+        'referral_count': user.get('referral_count', 0),
+        'memory': user.get('memory', {}),
+        'chat_count': len(user.get('chats', {}))
+    })
+
+
+# ===== ONLINE COUNT =====
+@app.get('/api/online')
+def online_count():
+    active = sum(1 for s in sessions.values() if time.time() - s.get('last_active', 0) < 300)
+    return jsonify({'online': max(active, 1)})
 
 
 if __name__ == '__main__':
