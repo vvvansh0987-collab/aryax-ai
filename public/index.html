@@ -17,8 +17,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ===== MANUS-STYLE INTRO (Disabled for stability) ===== -->
-  <div id="introScreen" class="intro-screen" style="display:none !important;">
+  <!-- ===== MANUS-STYLE INTRO ===== -->
+  <div id="introScreen" class="intro-screen" style="display:flex; position:fixed; inset:0; background:#000; z-index:99999; align-items:center; justify-content:center; color:#fff;">
     <div class="intro-content">
       <div id="introTyping" class="intro-typing"></div>
       <div id="introLogo" class="intro-logo" style="display:none; color: var(--text);">
@@ -164,7 +164,7 @@
     <div class="overlay" id="overlay"></div>
 
     <!-- MAIN CONTENT -->
-    <main class="main">
+    <main class="main" id="mainApp" style="display:none;">
       <!-- TOP BAR -->
       <header class="topbar">
         <div class="topbar-left">
