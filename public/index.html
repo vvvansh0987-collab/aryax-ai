@@ -17,8 +17,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ===== MANUS-STYLE INTRO ===== -->
-  <div id="introScreen" class="intro-screen">
+  <!-- ===== MANUS-STYLE INTRO (Disabled for stability) ===== -->
+  <div id="introScreen" class="intro-screen" style="display:none !important;">
     <div class="intro-content">
       <div id="introTyping" class="intro-typing"></div>
       <div id="introLogo" class="intro-logo" style="display:none; color: var(--text);">
@@ -30,7 +30,7 @@
   </div>
 
   <!-- ===== AUTH OVERLAY ===== -->
-  <div class="auth-overlay" id="authOverlay">
+  <div class="overlay active" id="authOverlay">
     <div class="auth-card">
       <div class="auth-logo" style="color: var(--text);">
         <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="premium-logo-svg" style="width:50%;height:50%;">
