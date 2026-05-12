@@ -1242,77 +1242,20 @@ async function loadOnlineCount() {
 // Refresh online count every 60s
 setInterval(loadOnlineCount, 60000);
 
-// ===== ANTI-SCREENSHOT & SECURITY SHIELD =====
+// ===== SECURITY SHIELD (LITE) =====
 (function initSecurity() {
-  // Create screen protect overlay
-  const overlay = document.createElement('div');
-  overlay.id = 'screenProtectOverlay';
-  overlay.innerHTML = '<span>🔒</span><span>AryaX — Content Protected</span><small style="font-size:14px;opacity:0.6;">Screenshots are disabled</small>';
-  overlay.style.cssText = 'display:none;position:fixed;inset:0;background:#000;z-index:999999;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-size:24px;font-weight:700;gap:16px;';
-  document.body.appendChild(overlay);
-
-  function flashProtect(ms = 1500) {
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.style.display = 'none', ms);
-  }
-
-  // Block PrintScreen & screenshot shortcuts
-  document.addEventListener('keydown', e => {
-    // PrintScreen
-    if (e.key === 'PrintScreen') {
-      e.preventDefault();
-      flashProtect();
-      navigator.clipboard?.writeText('').catch(() => {});
-      return;
-    }
-    // Ctrl+P (Print)
-    if (e.ctrlKey && e.key === 'p') {
-      e.preventDefault();
-      flashProtect(800);
-      return;
-    }
-    // Ctrl+Shift+S / Ctrl+Shift+I (DevTools / Save As)
-    if (e.ctrlKey && e.shiftKey && ['s','S','i','I'].includes(e.key)) {
-      e.preventDefault();
-      flashProtect(800);
-      return;
-    }
-    // F12 DevTools — warn only (can't fully block)
-    if (e.key === 'F12') {
-      e.preventDefault();
-      console.clear();
-      return;
-    }
-  });
-
-  // Disable right-click on main app (not on text inputs)
+  // Disable right-click on main app
   document.addEventListener('contextmenu', e => {
-    const tag = e.target.tagName.toLowerCase();
-    if (!['textarea', 'input'].includes(tag)) {
-      e.preventDefault();
+    if (!['textarea', 'input'].includes(e.target.tagName.toLowerCase())) e.preventDefault();
+  });
+  // Disable simple F12 and PrintScreen warning
+  document.addEventListener('keydown', e => {
+    if (e.key === 'F12' || e.key === 'PrintScreen') {
+      console.clear();
+      console.log('AryaX Security: Content Protected');
     }
   });
-
-  // Screen Capture API detection
-  if (navigator.mediaDevices?.getDisplayMedia) {
-    const _orig = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
-    navigator.mediaDevices.getDisplayMedia = async (...args) => {
-      flashProtect(3000);
-      return _orig(...args);
-    };
-  }
-
-  // Tab visibility — blur content when tab is hidden (prevent Alt+Tab screenshot)
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      document.body.style.filter = 'blur(20px)';
-    } else {
-      document.body.style.filter = '';
-    }
-  });
-
-  console.clear();
-  console.log('%c🔒 AryaX Security Shield Active', 'color:#10b981;font-size:16px;font-weight:bold;');
+  console.log('🔒 AryaX Security Active');
 })();
 
 
