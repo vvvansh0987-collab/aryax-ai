@@ -85,7 +85,7 @@ function loadChat(id, messages) {
 
 $("newChat").onclick = () => {
     currentChatId = Date.now().toString();
-    chatArea.innerHTML = '<div class="welcome-hero"><h1>Neural Session Initialized</h1><p>How shall we evolve today?</p></div>';
+    chatArea.innerHTML = '<div class="welcome-hero"><h1>What\'s on the agenda today?</h1></div>';
     document.querySelectorAll(".recent-item").forEach(i => i.classList.remove("active"));
 };
 
