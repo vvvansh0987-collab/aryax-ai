@@ -1,6 +1,6 @@
 /* ===== ARYAX ULTRA-PREMIUM THEME ===== */
 :root {
-  --bg: #050505;
+  --bg: #000000;
   --surface: rgba(10, 10, 10, 0.8);
   --card: rgba(20, 20, 20, 0.9);
   --border: rgba(255, 255, 255, 0.08);
@@ -95,8 +95,8 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,-a
 
 .sidebar-footer { margin-top:auto; padding:12px; border-top:1px solid var(--border); }
 .sidebar-credit { text-align:center; font-size:11px; color:var(--text-muted); margin-top:8px; }
-.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; }
-.overlay.show { display:block; }
+.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index:9999; align-items:center; justify-content:center; }
+.overlay.active { display:flex; }
 
 /* ===== MAIN ===== */
 .main { flex:1; display:flex; flex-direction:column; min-width:0; position:relative; }
