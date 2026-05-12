@@ -14,6 +14,7 @@ const loginForm = $("loginForm"), signupForm = $("signupForm");
 const tabLogin = $("tabLogin"), tabSignup = $("tabSignup");
 const logoutBtn = $("logoutBtn");
 const ttsToggle = $("ttsToggle"), exportBtn = $("exportChat"), shareChatBtn = $("shareChat");
+const intro = $("introScreen"), typing = $("introTyping"), introLogo = $("introLogo");
 const personaSelect = $("personaSelect"), fileUpload = $("fileUpload");
 const pricingClose = $("pricingClose"), userPlan = $("userPlan");
 const artifactSidebar = $("artifactSidebar"), artifactBody = $("artifactBody"), artifactToggle = $("artifactToggle");
@@ -828,11 +829,19 @@ installAppBtn?.addEventListener("click", async () => {
 
 // ===== MANUS-STYLE INTRO =====
 document.addEventListener("DOMContentLoaded", async () => {
-  const intro = $("introScreen");
-  const typing = $("introTyping");
-  const introLogo = $("introLogo");
+  const introEl = document.getElementById("introScreen");
+  const typingEl = document.getElementById("introTyping");
+  const introLogoEl = document.getElementById("introLogo");
   
-  if (intro && typing && introLogo) {
+  // Emergency reveal after 12s no matter what
+  setTimeout(() => {
+    if (introEl) {
+      introEl.style.opacity = "0";
+      setTimeout(() => introEl.style.display = "none", 500);
+    }
+  }, 12000);
+
+  if (introEl && typingEl && introLogoEl) {
     if (!sessionStorage.getItem("aryax-intro-seen")) {
       const lines = [
         "Initializing Artificial Human Mind...", 
@@ -840,22 +849,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         "Bypassing Security Protocols...", 
         "AryaX System Online."
       ];
-      for (let line of lines) {
-        typing.innerHTML = "";
-        for (let char of line) {
-          typing.innerHTML += char;
-          await new Promise(r => setTimeout(r, 40));
+      try {
+        for (let line of lines) {
+          typingEl.innerHTML = "";
+          for (let char of line) {
+            typingEl.innerHTML += char;
+            await new Promise(r => setTimeout(r, 35));
+          }
+          await new Promise(r => setTimeout(r, 400));
         }
-        await new Promise(r => setTimeout(r, 400));
-      }
-      typing.style.display = "none";
-      introLogo.style.display = "block";
-      await new Promise(r => setTimeout(r, 1500));
-      intro.style.opacity = "0";
-      intro.style.visibility = "hidden";
+        typingEl.style.display = "none";
+        introLogoEl.style.display = "block";
+        await new Promise(r => setTimeout(r, 1200));
+      } catch(e) { console.error("Intro Error:", e); }
+      
+      introEl.style.opacity = "0";
+      setTimeout(() => introEl.style.display = "none", 500);
       sessionStorage.setItem("aryax-intro-seen", "true");
     } else {
-      intro.style.display = "none";
+      introEl.style.display = "none";
     }
   }
 });

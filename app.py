@@ -962,6 +962,48 @@ def online_count():
     active = sum(1 for s in sessions.values() if time.time() - s.get('last_active', 0) < 300)
     return jsonify({'online': max(active, 1)})
 
+# ===== CHAT HISTORY & MEMORY =====
+@app.get('/api/history/load')
+def load_history():
+    username = request.args.get('username', '').strip().lower()
+    if not username: return jsonify({'error': 'Missing username'}), 400
+    db = load_db()
+    user = db['users'].get(username)
+    if not user: return jsonify({'history': []}) # Return empty for new
+    return jsonify({'history': user.get('chats', [])})
+
+@app.post('/api/history/save')
+def save_history():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    history = data.get('history', [])
+    if not username: return jsonify({'error': 'Missing username'}), 400
+    db = load_db()
+    if username in db['users']:
+        db['users'][username]['chats'] = history[:100] # Limit to 100
+        db['users'][username]['total_chats'] = len(history)
+        save_db(db)
+    return jsonify({'status': 'saved'})
+
+@app.get('/api/memory/load')
+def load_memory():
+    username = request.args.get('username', '').strip().lower()
+    db = load_db()
+    user = db['users'].get(username)
+    if not user: return jsonify({'memory': {}})
+    return jsonify({'memory': user.get('memory', {})})
+
+@app.post('/api/memory/save')
+def save_user_memory_api():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    memory = data.get('memory', {})
+    db = load_db()
+    if username in db['users']:
+        db['users'][username]['memory'] = memory
+        save_db(db)
+    return jsonify({'status': 'saved'})
+
 
 if __name__ == '__main__':
     # Initialize db
