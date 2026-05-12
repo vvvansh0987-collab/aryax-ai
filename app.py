@@ -1005,10 +1005,12 @@ def save_user_memory_api():
     return jsonify({'status': 'saved'})
 
 
+# Initialize db for production stability
+if not os.path.exists(DB_FILE) or os.path.getsize(DB_FILE) < 5:
+    save_db({'users': {}})
+
+# Deployment Trigger: Clean Slate Rebuild v2
 if __name__ == '__main__':
-    # Initialize db
-    if not os.path.exists(DB_FILE) or os.path.getsize(DB_FILE) < 5:
-        save_db({'users': {}})
     port = int(os.environ.get('PORT', 5054))
     print(f"\nAryaX AI Production Server Starting on Port {port}...")
     app.run(host='0.0.0.0', port=port)
