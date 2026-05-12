@@ -11,7 +11,7 @@ $("loginForm").addEventListener("submit", async e => {
     e.preventDefault();
     const u = $("loginUser").value.trim();
     const p = $("loginPass").value;
-    $("loginError").textContent = "Establishing Neural Link...";
+    $("loginError").textContent = "Logging in...";
     
     try {
         const r = await fetch("/api/login", {
@@ -26,7 +26,7 @@ $("loginForm").addEventListener("submit", async e => {
             $("loginError").textContent = d.error;
         }
     } catch {
-        $("loginError").textContent = "Neural bridge failed. (Server Error)";
+        $("loginError").textContent = "Login failed. (Server Error)";
     }
 });
 
@@ -63,7 +63,7 @@ function renderSidebar(chats) {
     chats.forEach(c => {
         const div = document.createElement("div");
         div.className = "recent-item";
-        div.textContent = c.title || "Untitled Session";
+        div.textContent = c.title || "Untitled Chat";
         if (currentChatId === c.id) div.classList.add("active");
         div.onclick = () => loadChat(c.id, c.messages);
         recentList.appendChild(div);
@@ -74,12 +74,12 @@ function loadChat(id, messages) {
     currentChatId = id;
     chatArea.innerHTML = "";
     messages.forEach(m => {
-        const role = m.role === "user" ? "USER" : "ARYAX";
+        const role = m.role === "user" ? "You" : "AryaX";
         appendMessage(role, m.parts[0].text);
     });
     // Update active state in sidebar
     document.querySelectorAll(".recent-item").forEach(item => {
-        item.classList.toggle("active", item.textContent === (messages[0]?.parts[0].text.slice(0, 30) || "Untitled Session"));
+        item.classList.toggle("active", item.textContent === (messages[0]?.parts[0].text.slice(0, 30) || "Untitled Chat"));
     });
 }
 
@@ -100,11 +100,11 @@ async function sendMessage() {
     const welcome = chatArea.querySelector(".welcome-hero");
     if (welcome) welcome.remove();
 
-    appendMessage("USER", text);
+    appendMessage("You", text);
     input.value = "";
     input.style.height = "auto";
     
-    const botWrap = appendMessage("ARYAX", "Synthesizing...");
+    const botWrap = appendMessage("AryaX", "Thinking...");
     const botText = botWrap.querySelector(".msg");
 
     try {
@@ -146,7 +146,7 @@ async function sendMessage() {
         saveCurrentHistory();
 
     } catch (e) {
-        botText.textContent = "Neural connection lost.";
+        botText.textContent = "Connection lost.";
         console.error(e);
     }
 }
