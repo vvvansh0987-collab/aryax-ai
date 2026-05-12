@@ -1,356 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AryaX AI — World's Most Advanced AI Assistant</title>
-  <meta name="description" content="AryaX AI: The Ultimate All-Rounder AI — Coding, Images, Games & Mastery. 17+ AI Modes.">
-  <meta property="og:title" content="AryaX AI — The World's Most Advanced AI" />
-  <meta property="og:description" content="Experience 17+ AI Modes, Elite GPT-4o capabilities, and ultra-high-speed processing. The ultimate neural interface." />
-  <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Artificial_intelligence_icon.svg/1024px-Artificial_intelligence_icon.svg.png" />
-  <meta property="og:url" content="https://aryax.ai" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="logo.png" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AryaX AI — World's Most Advanced AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <!-- ===== MANUS-STYLE INTRO ===== -->
-  <div id="introScreen" class="intro-screen" style="display:none; position:fixed; inset:0; background:#000; z-index:99999; align-items:center; justify-content:center; color:#fff; transition: opacity 0.8s;">
-    <div class="intro-content">
-      <div id="introTyping" class="intro-typing"></div>
-      <div id="introLogo" class="intro-logo" style="display:none; color: var(--text);">
-        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
-          <path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== AUTH OVERLAY ===== -->
-  <div class="overlay active" id="authOverlay" style="display:flex;">
-    <div class="auth-card">
-      <div class="auth-logo" style="color: var(--text);">
-        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="premium-logo-svg" style="width:50%;height:50%;">
-          <path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/>
-        </svg>
-      </div>
-      <h2>Welcome to AryaX AI</h2>
-      <p class="auth-subtitle">The Ultimate All-Rounder AI Assistant</p>
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin">Sign In</button>
-        <button class="auth-tab" id="tabSignup">Sign Up</button>
-      </div>
-
-      <form id="loginForm" autocomplete="off">
-        <input type="text" id="loginUser" placeholder="Username" required>
-        <input type="password" id="loginPass" placeholder="Password" required>
-        <button type="submit" class="auth-btn">Sign In</button>
-        <p class="auth-error" id="loginError"></p>
-      </form>
-
-      <form id="signupForm" style="display:none" autocomplete="off">
-        <input type="text" id="signupUser" placeholder="Username (min 6 chars)" required>
-        <input type="password" id="signupPass" placeholder="Password" required>
-        <input type="tel" id="signupMobile" placeholder="Mobile Number">
-        <input type="email" id="signupEmail" placeholder="Email">
-        <button type="submit" class="auth-btn">Create Account</button>
-        <p class="auth-error" id="signupError"></p>
-      </form>
-
-      <div class="auth-divider"><span>or</span></div>
-      <button class="google-btn" id="googleBtn">
-        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Continue with Google
-      </button>
-    </div>
-  </div>
-
-  <!-- ===== MAIN APP ===== -->
-  <div class="app" id="mainApp" style="display:none">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="logo-wrap" style="color: var(--text);">
-          <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
-            <path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/>
-          </svg>
+<body class="dark-theme">
+    <!-- AUTH OVERLAY -->
+    <div id="authOverlay" class="overlay">
+        <div class="auth-card">
+            <h1>AryaX AI</h1>
+            <p>Welcome to the 2065 Neural Interface</p>
+            <form id="loginForm">
+                <input type="text" id="loginUser" placeholder="Username" required>
+                <input type="password" id="loginPass" placeholder="Password" required>
+                <button type="submit" class="primary-btn">Initialize Connection</button>
+                <div id="loginError" class="error"></div>
+            </form>
+            <div class="auth-footer">
+                Don't have an account? <span onclick="alert('Signup is currently closed. Use demouser1/demo1234')">Request Access</span>
+            </div>
         </div>
-        <span class="logo-text">AryaX AI</span>
-        <button class="close-sidebar" id="closeSidebar">✕</button>
-      </div>
-
-      <button class="new-chat-btn" id="newChat">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New Chat
-      </button>
-
-      <div class="sidebar-section">
-        <div class="section-title">AI MODES</div>
-        <div class="modes-grid">
-          <button class="mode-btn active" data-mode="chat"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> General Chat</button>
-          <button class="mode-btn" data-mode="code"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Code AI</button>
-          <button class="mode-btn" data-mode="document"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Documents</button>
-          <button class="mode-btn" data-mode="excel"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg> Excel & Sheets</button>
-          <button class="mode-btn" data-mode="email"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Email Writer</button>
-          <button class="mode-btn" data-mode="image"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Image Generator</button>
-          <button class="mode-btn" data-mode="study"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Study Helper</button>
-          <button class="mode-btn" data-mode="game"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.544-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg> Game Creator</button>
-          <button class="mode-btn hack-btn" data-mode="hack"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Hack Mode</button>
-          <button class="mode-btn" data-mode="cyber"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Cybersecurity</button>
-          <button class="mode-btn" data-mode="webdev"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Web Dev</button>
-          <button class="mode-btn" data-mode="math"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Math Solver</button>
-          <button class="mode-btn" data-mode="social"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg> Social Viral</button>
-          <button class="mode-btn elite-btn" data-mode="elite"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Elite AI (GPT-4o)</button>
-          <button class="mode-btn" data-mode="polyglot"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Polyglot Tech</button>
-        </div>
-      </div>
-
-      <div class="sidebar-section">
-        <div class="section-title">TOOLS</div>
-        <button id="imageGenBtn" class="tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> Image Studio
-        </button>
-        <button id="videoGenBtn" class="tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Video Studio
-        </button>
-        <button id="exportChat" class="tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Chat
-        </button>
-        <button id="shareChat" class="tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share AryaX
-        </button>
-        <button id="marketingPdfBtn" class="tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Marketing PDF
-        </button>
-        <button id="installAppBtn" class="tool-btn" style="display:none;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Install App
-        </button>
-      </div>
-
-      <div class="sidebar-section">
-        <div class="section-title">RECENT CHATS</div>
-        <div id="recentList"><p class="empty-hint">No saved chats</p></div>
-      </div>
-
-      <div class="sidebar-section">
-        <div class="section-title">PERSONA</div>
-        <select id="personaSelect" class="persona-select">
-          <option value="default">Default</option>
-          <option value="friendly">Friendly BFF</option>
-          <option value="teacher">Strict Teacher</option>
-          <option value="funny">Comedy Mode</option>
-          <option value="professional">Professional</option>
-          <option value="pirate">Pirate Mode</option>
-          <option value="guru">Spiritual Guru</option>
-        </select>
-      </div>
-
-      <div class="sidebar-footer">
-        <button id="themeToggle" class="tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Toggle Theme
-        </button>
-        <button id="logoutBtn" class="tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout
-        </button>
-        <div class="sidebar-credit">Powered by AryaX Labs</div>
-      </div>
-    </aside>
-
-    <div class="overlay" id="overlay"></div>
-
-    <!-- MAIN CONTENT -->
-    <main class="main" id="mainApp" style="display:none;">
-      <!-- TOP BAR -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="menu-btn" id="menuBtn">☰</button>
-          <span class="heartbeat-dot" id="heartbeatDot" title="AryaX Online"></span>
-          <span class="mode-label" id="modeLabel">General Chat</span>
-        </div>
-        <div class="topbar-center">
-          <span class="plan-badge" id="userPlan"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Free Plan</span>
-        </div>
-        <div class="topbar-right">
-          <button id="ttsToggle" class="tts-btn" title="Text to Speech"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>
-          <span class="user-name" id="userName">User</span>
-          <div class="avatar" id="userAvatar">U</div>
-        </div>
-      </header>
-
-      <!-- CHAT AREA -->
-      <div class="chat-container">
-        <!-- WELCOME SCREEN -->
-        <div class="welcome" id="welcome">
-          <div class="welcome-logo stagger-1" style="color: var(--text);">
-            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:60%;height:60%;">
-              <path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/>
-            </svg>
-          </div>
-          <h1 class="stagger-1">AryaX AI</h1>
-          <p class="welcome-tagline stagger-2">The Ultimate All-Rounder AI — Coding, Images & Mastery</p>
-          <div class="welcome-stats stagger-2">
-            <div class="stat"><span class="stat-num">17+</span><span class="stat-label">AI Modes</span></div>
-            <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Knowledge</span></div>
-            <div class="stat"><span class="stat-num">10k</span><span class="stat-label">Daily Credits</span></div>
-          </div>
-          <div class="quick-grid stagger-3">
-            <button class="quick-btn" data-msg="Write a Python web scraper with BeautifulSoup">💻 Python Scraper</button>
-            <button class="quick-btn" data-msg="Teach me ethical hacking basics">🔒 Learn Hacking</button>
-            <button class="quick-btn" data-msg="Build a SaaS landing page">🌐 Build Website</button>
-            <button class="quick-btn" data-msg="Solve: integrate x^2 * e^x dx">🧮 Solve Calculus</button>
-            <button class="quick-btn" data-msg="Create a Flappy Bird game in HTML/CSS/JS">🎮 Flappy Bird</button>
-            <button class="quick-btn" data-msg="Write essay on AI impact on society">📝 Write Essay</button>
-          </div>
-        </div>
-
-        <!-- CHAT MESSAGES -->
-        <div class="chat" id="chat"></div>
-      </div>
-
-      <!-- IMAGE PREVIEW -->
-      <div class="image-preview" id="imagePreview" style="display:none">
-        <img id="generatedImage" alt="Generated">
-        <a id="downloadImg" download="aryax-image.png" class="download-btn">⬇ Download</a>
-      </div>
-
-      <!-- INPUT AREA -->
-      <div class="input-area">
-        <div class="input-box" id="inputBox">
-          <div class="input-row">
-            <button class="plus-btn" id="fileBtn" title="Upload File">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-            </button>
-            <textarea id="input" placeholder="Ask AryaX anything..." rows="1"></textarea>
-            <button class="voice-btn" id="voiceBtn" title="Voice Input">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            </button>
-            <button class="send-btn" id="send" title="Send">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-      <input type="file" id="fileUpload" accept=".txt,.py,.js,.html,.css,.json,.csv,.md,.log,.xml,.java,.c,.cpp,.rs,.pdf" style="display:none">
-    </main>
-
-    <!-- ARTIFACT SIDEBAR -->
-    <aside class="artifact-sidebar" id="artifactSidebar">
-      <div class="artifact-header">
-        <span class="artifact-title">Artifact Preview</span>
-        <button class="close-btn" id="artifactToggle">✕</button>
-      </div>
-      <div class="artifact-body" id="artifactBody"></div>
-    </aside>
-
-    <!-- AryaX Live Avatar Orb -->
-    <div class="aryax-avatar-orb" id="aryaxOrb" title="AryaX is alive">
-      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 22C12 16.477 7.52285 12 2 12C7.52285 12 12 7.52285 12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.477 12 22Z"/>
-      </svg>
     </div>
 
-    <!-- Orb Tooltip -->
-    <div class="orb-tooltip" id="orbTooltip">
-      <strong>🧠 AryaX Neural Status</strong>
-      <span id="orbStatusText">Idle — Ready to assist</span>
-    </div>
-
-    <!-- TTS Speaking Bar -->
-    <div class="tts-bar" id="ttsBar">
-      <div class="voice-wave">
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
-      AryaX is speaking...
-      <button class="stop-btn" id="ttsStopBtn">■ Stop</button>
-    </div>
-  </div>
-
-  <!-- ===== HACK MODE OVERLAY ===== -->
-  <div class="hack-overlay" id="hackOverlay" style="display:none">
-    <canvas id="matrixCanvas"></canvas>
-    <div class="hack-terminal">
-      <div class="hack-header">
-        <span>AryaX — SYSTEM ACCESS TERMINAL</span>
-        <button id="hackClose">✕ EXIT</button>
-      </div>
-      <div class="hack-output" id="hackOutput"></div>
-      <div class="hack-input-row">
-        <span class="hack-prompt">root@aryax:~#</span>
-        <input type="text" id="hackInput" placeholder="Type a command... (help)">
-        <button id="hackSend">⏎</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== PRICING OVERLAY ===== -->
-  <div class="pricing-overlay" id="pricingOverlay" style="display:none">
-    <div class="pricing-modal">
-      <div class="pricing-header">
-        <h2>Upgrade Your Plan</h2>
-        <button id="pricingClose">✕</button>
-      </div>
-
-      <div class="plans-grid">
-        <div class="plan-card">
-          <div class="plan-badge">Basic</div>
-          <h3>AryaX</h3>
-          <div class="plan-price">₹0<span>/month</span></div>
-          <ul>
-            <li>10,000 credits/day</li>
-            <li>All 17+ Modes</li>
-            <li>High-Speed Streaming</li>
-            <li>Image Generation</li>
-          </ul>
-          <button class="plan-btn" disabled>Current Plan</button>
+    <!-- MAIN APP -->
+    <div id="mainApp" style="display:none;">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo">AryaX</span>
+                <button id="newChat" class="icon-btn">＋</button>
+            </div>
+            <div id="recentList" class="recent-list"></div>
+            <div class="sidebar-footer">
+                <span id="userName">User</span>
+                <button id="logoutBtn" class="link-btn">Logout</button>
+            </div>
         </div>
-        <div class="plan-card featured">
-          <div class="plan-badge">Popular</div>
-          <h3>AryaX Plus</h3>
-          <div class="plan-price">₹99<span>/month</span></div>
-          <ul>
-            <li>25,000 credits/day</li>
-            <li>Elite AI (GPT-4o)</li>
-            <li>Priority Streaming</li>
-            <li>Ad-Free Experience</li>
-          </ul>
-          <button class="plan-btn" data-plan="plus" data-amount="9900">Upgrade Now</button>
-        </div>
-        <div class="plan-card premium">
-          <div class="plan-badge">Ultimate</div>
-          <h3>AryaX Premium Plus</h3>
-          <div class="plan-price">₹299<span>/month</span></div>
-          <ul>
-            <li>Unlimited Credits</li>
-            <li>Elite AI + All Modes</li>
-            <li>24/7 VIP Support</li>
-            <li>Early Access Features</li>
-          </ul>
-          <button class="plan-btn premium-btn" data-plan="premium" data-amount="29900">Go Premium</button>
-        </div>
-      </div>
 
-      <!-- UPI Screen -->
-      <div id="upiScreen" style="display:none" class="upi-screen">
-        <button id="backToPlans" class="back-btn">← Back to Plans</button>
-        <h3>Pay via UPI</h3>
-        <p>Plan: <strong id="upiPlanText">-</strong> | Amount: <strong id="upiAmountText">-</strong></p>
-        <img id="upiQR" class="upi-qr" alt="UPI QR Code">
-        <p class="upi-id-text">UPI ID: <strong>9510225996@fam</strong></p>
-        <input type="text" id="upiUtr" placeholder="Enter 12-digit UTR Number" maxlength="22" class="upi-input">
-        <button id="verifyUpiBtn" class="auth-btn">Verify Payment</button>
-      </div>
+        <main class="content">
+            <div class="topbar">
+                <span id="modeLabel">General Intelligence</span>
+                <div class="top-actions">
+                    <span id="creditCount" class="badge">0 Credits</span>
+                </div>
+            </div>
+            <div id="chat" class="chat-area">
+                <div class="welcome-msg">
+                    <h2>Hello, I am AryaX.</h2>
+                    <p>How can I assist your mind today?</p>
+                </div>
+            </div>
+            <div class="input-container">
+                <div class="input-wrap">
+                    <textarea id="input" placeholder="Transmit your thoughts..." rows="1"></textarea>
+                    <button id="send" class="send-btn">▲</button>
+                </div>
+            </div>
+        </main>
     </div>
-  </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-  <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
