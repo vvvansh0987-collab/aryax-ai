@@ -18,7 +18,7 @@
 </head>
 <body>
   <!-- ===== MANUS-STYLE INTRO ===== -->
-  <div id="introScreen" class="intro-screen" style="display:flex; position:fixed; inset:0; background:#000; z-index:99999; align-items:center; justify-content:center; color:#fff;">
+  <div id="introScreen" class="intro-screen" style="display:none; position:fixed; inset:0; background:#000; z-index:99999; align-items:center; justify-content:center; color:#fff; transition: opacity 0.8s;">
     <div class="intro-content">
       <div id="introTyping" class="intro-typing"></div>
       <div id="introLogo" class="intro-logo" style="display:none; color: var(--text);">
@@ -30,7 +30,7 @@
   </div>
 
   <!-- ===== AUTH OVERLAY ===== -->
-  <div class="overlay active" id="authOverlay">
+  <div class="overlay active" id="authOverlay" style="display:flex;">
     <div class="auth-card">
       <div class="auth-logo" style="color: var(--text);">
         <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="premium-logo-svg" style="width:50%;height:50%;">
@@ -164,7 +164,7 @@
     <div class="overlay" id="overlay"></div>
 
     <!-- MAIN CONTENT -->
-    <main class="main" id="mainApp" style="display:none; opacity:1;">
+    <main class="main" id="mainApp" style="display:none;">
       <!-- TOP BAR -->
       <header class="topbar">
         <div class="topbar-left">

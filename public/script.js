@@ -828,49 +828,54 @@ installAppBtn?.addEventListener("click", async () => {
 });
 
 // ===== MANUS-STYLE INTRO =====
-document.addEventListener("DOMContentLoaded", async () => {
+async function initIntro() {
   const introEl = document.getElementById("introScreen");
   const typingEl = document.getElementById("introTyping");
   const introLogoEl = document.getElementById("introLogo");
   
-  // Emergency reveal after 12s no matter what
-  setTimeout(() => {
-    if (introEl) {
-      introEl.style.opacity = "0";
-      setTimeout(() => introEl.style.display = "none", 500);
-    }
-  }, 12000);
+  if (!introEl) return;
 
-  if (introEl && typingEl && introLogoEl) {
-    if (!sessionStorage.getItem("aryax-intro-seen")) {
-      const lines = [
-        "Initializing Artificial Human Mind...", 
-        "Loading Neural Networks...", 
-        "Bypassing Security Protocols...", 
-        "AryaX System Online."
-      ];
-      try {
-        for (let line of lines) {
-          typingEl.innerHTML = "";
-          for (let char of line) {
-            typingEl.innerHTML += char;
-            await new Promise(r => setTimeout(r, 35));
-          }
-          await new Promise(r => setTimeout(r, 400));
+  // Emergency reveal after 10s
+  setTimeout(() => {
+    introEl.style.opacity = "0";
+    setTimeout(() => introEl.style.display = "none", 800);
+  }, 10000);
+
+  if (!sessionStorage.getItem("aryax-intro-seen") && typingEl && introLogoEl) {
+    introEl.style.display = "flex"; // Show it now
+    const lines = [
+      "Initializing Artificial Human Mind...", 
+      "Loading Neural Networks...", 
+      "AryaX System Online."
+    ];
+    try {
+      for (let line of lines) {
+        typingEl.innerHTML = "";
+        for (let char of line) {
+          typingEl.innerHTML += char;
+          await new Promise(r => setTimeout(r, 30));
         }
-        typingEl.style.display = "none";
-        introLogoEl.style.display = "block";
-        await new Promise(r => setTimeout(r, 1200));
-      } catch(e) { console.error("Intro Error:", e); }
-      
-      introEl.style.opacity = "0";
-      setTimeout(() => introEl.style.display = "none", 500);
-      sessionStorage.setItem("aryax-intro-seen", "true");
-    } else {
-      introEl.style.display = "none";
-    }
+        await new Promise(r => setTimeout(r, 300));
+      }
+      typingEl.style.display = "none";
+      introLogoEl.style.display = "block";
+      await new Promise(r => setTimeout(r, 1000));
+    } catch(e) { console.error("Intro Error:", e); }
+    
+    introEl.style.opacity = "0";
+    setTimeout(() => introEl.style.display = "none", 800);
+    sessionStorage.setItem("aryax-intro-seen", "true");
+  } else {
+    introEl.style.display = "none";
   }
-});
+}
+
+// Run init when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initIntro);
+} else {
+  initIntro();
+}
 
 // ===== PAYMENT (DIRECT UPI) =====
 upgradeBtn?.addEventListener("click", () => {
