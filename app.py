@@ -961,60 +961,7 @@ def get_profile():
 def online_count():
     active = sum(1 for s in sessions.values() if time.time() - s.get('last_active', 0) < 300)
     return jsonify({'online': max(active, 1)})
-
-# ===== CHAT HISTORY & MEMORY =====
-@app.get('/api/history/load')
-def load_history():
-    username = request.args.get('username', '').strip().lower()
-    if not username: return jsonify({'error': 'Missing username'}), 400
-    db = load_db()
-    user = db['users'].get(username)
-    if not user: return jsonify({'history': []}) # Return empty for new
-    return jsonify({'history': user.get('chats', [])})
-
-@app.post('/api/history/save')
-def save_history():
-    data = request.json
-    username = data.get('username', '').strip().lower()
-    history = data.get('history', [])
-    if not username: return jsonify({'error': 'Missing username'}), 400
-    db = load_db()
-    if username in db['users']:
-        db['users'][username]['chats'] = history[:100] # Limit to 100
-        db['users'][username]['total_chats'] = len(history)
-        save_db(db)
-    return jsonify({'status': 'saved'})
-
-@app.get('/api/memory/load')
-def load_memory():
-    username = request.args.get('username', '').strip().lower()
-    db = load_db()
-    user = db['users'].get(username)
-    if not user: return jsonify({'memory': {}})
-    return jsonify({'memory': user.get('memory', {})})
-
-@app.post('/api/memory/save')
-def save_user_memory_api():
-    data = request.json
-    username = data.get('username', '').strip().lower()
-    memory = data.get('memory', {})
-    db = load_db()
-    if username in db['users']:
-        db['users'][username]['memory'] = memory
-        save_db(db)
-    return jsonify({'status': 'saved'})
-
-
-# Initialize db for production stability
-if not os.path.exists(DB_FILE) or os.path.getsize(DB_FILE) < 5:
-    save_db({'users': {}})
-
-# Deployment Trigger: Clean Slate Rebuild v2
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5054))
-    print(f"\nAryaX AI Production Server Starting on Port {port}...")
-    app.run(host='0.0.0.0', port=port)
-
+    
 @app.route('/api/generate_office', methods=['POST'])
 def generate_office():
     data = request.json
@@ -1042,3 +989,15 @@ def generate_office():
         return Response(out.read(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', headers={'Content-Disposition': 'attachment; filename=aryax_ledger.xlsx'})
     
     return jsonify({'error': 'Invalid type'}), 400
+
+
+# Initialize db for production stability
+if not os.path.exists(DB_FILE) or os.path.getsize(DB_FILE) < 5:
+    save_db({'users': {}})
+
+# Deployment Trigger: Clean Slate Rebuild v2
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5054))
+    print(f"\nAryaX AI Production Server Starting on Port {port}...")
+    app.run(host='0.0.0.0', port=port)
+ 400
