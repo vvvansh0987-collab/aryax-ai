@@ -194,6 +194,20 @@ input.addEventListener("input", () => {
 sendBtn.addEventListener("click", sendMessage);
 input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 
+// Sidebar Toggle
+const toggleBtn = $("toggleSidebar");
+const sidePanel = document.querySelector(".side-panel");
+
+if (toggleBtn && sidePanel) {
+    toggleBtn.addEventListener("click", () => {
+        if (window.innerWidth <= 768) {
+            sidePanel.classList.toggle("open");
+        } else {
+            sidePanel.classList.toggle("closed");
+        }
+    });
+}
+
 // AUTO LOGIN
 (async () => {
     const saved = localStorage.getItem("aryax-user");
