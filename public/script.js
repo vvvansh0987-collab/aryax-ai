@@ -89,12 +89,16 @@ $("googleBtn")?.addEventListener("click", () => {
 function loginSuccess(username, credits){
   currentUser = username;
   localStorage.setItem('aryax-user', username);
-  authOverlay.style.display = 'none';
-  mainApp.style.display = 'flex';
-  $('userName').textContent = username;
-  $('userAvatar').textContent = username[0].toUpperCase();
+  if(authOverlay) authOverlay.style.display = 'none';
+  if(mainApp) {
+    mainApp.style.display = 'flex';
+    setTimeout(() => mainApp.style.opacity = '1', 50);
+  }
+  const un = $('userName'), ua = $('userAvatar');
+  if(un) un.textContent = username;
+  if(ua) ua.textContent = username[0].toUpperCase();
   if(creditCount) creditCount.textContent = credits;
-  input.focus();
+  if(input) input.focus();
   // Load cloud data
   setTimeout(() => {
     loadCloudHistory();
@@ -106,8 +110,11 @@ function loginSuccess(username, credits){
 logoutBtn?.addEventListener("click",()=>{
   localStorage.removeItem("aryax-user");
   currentUser=null;
-  authOverlay.style.display="flex";
-  mainApp.style.display="none";
+  if(authOverlay) authOverlay.style.display="flex";
+  if(mainApp) {
+    mainApp.style.display="none";
+    mainApp.style.opacity="0";
+  }
 });
 
 // Auto login
@@ -117,11 +124,14 @@ logoutBtn?.addEventListener("click",()=>{
     try{
       const r=await fetch(`/api/credits?username=${saved}`);
       const d=await r.json();
-      if(r.ok){loginSuccess(saved,d.credits);return}
+      if(r.ok){
+        loginSuccess(saved,d.credits);
+        return;
+      }
     }catch{}
   }
-  authOverlay.style.display="flex";
-  mainApp.style.display="none";
+  if(authOverlay) authOverlay.style.display="flex";
+  if(mainApp) mainApp.style.display="none";
 })();
 
 // ===== THEME =====
