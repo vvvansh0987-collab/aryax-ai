@@ -6,11 +6,11 @@
     <meta name="theme-color" content="#060608">
     <meta name="description" content="AryaX — The World's First Artificial Human Mind. Chat, Code, Create, Analyze and more.">
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%237c6df0'/%3E%3Cpath d='M50 18L18 78H36L50 48L64 78H82L50 18Z' fill='white'/%3E%3Cpath d='M28 62H72' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230a0a0a'/%3E%3Cpath fill-rule='evenodd' d='M50,16 L15,84 H32 L39,63 H61 L68,84 H85 L50,16 Z M44,55 L50,30 L56,55 Z' fill='white'/%3E%3C/svg%3E">
     <title>AryaX — Artificial Super Intelligence</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
-    <link rel="stylesheet" href="style.css?v=4.0">
+    <link rel="stylesheet" href="style.css?v=4.2">
 </head>
 <body>
 
@@ -21,12 +21,11 @@
     <div class="intro-bg-glow"></div>
     <div class="intro-content">
         <div class="intro-logo-wrap">
-            <svg class="intro-svg" width="90" height="90" viewBox="0 0 100 100" fill="none">
-                <path class="ipath" d="M50 10L10 80H35L50 50L65 80H90L50 10Z" stroke="#7c6df0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path class="ipath2" d="M25 60H75" stroke="#00d4aa" stroke-width="5" stroke-linecap="round"/>
-                <circle class="inode" cx="50" cy="10" r="5" fill="#7c6df0"/>
-                <circle class="inode" cx="10" cy="80" r="5" fill="#7c6df0"/>
-                <circle class="inode" cx="90" cy="80" r="5" fill="#7c6df0"/>
+            <svg width="88" height="88" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" rx="22" fill="rgba(255,255,255,0.08)"/>
+                <path fill-rule="evenodd" class="ipath"
+                    d="M50,16 L15,84 H32 L39,63 H61 L68,84 H85 L50,16 Z M44,55 L50,30 L56,55 Z"
+                    fill="white" stroke="none"/>
             </svg>
         </div>
         <div class="intro-brand">AryaX</div>
@@ -43,9 +42,9 @@
     <div class="onboarding-card">
         <div class="onboarding-header">
             <div class="ob-logo">
-                <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
-                    <path d="M50 10L10 80H35L50 50L65 80H90L50 10Z" fill="#7c6df0"/>
-                    <path d="M25 60H75" stroke="#00d4aa" stroke-width="6" stroke-linecap="round"/>
+                <svg width="34" height="34" viewBox="0 0 100 100" fill="none">
+                    <rect width="100" height="100" rx="18" fill="#fff"/>
+                    <path fill-rule="evenodd" d="M50,16 L15,84 H32 L39,63 H61 L68,84 H85 L50,16 Z M44,55 L50,30 L56,55 Z" fill="#000"/>
                 </svg>
                 <span>AryaX</span>
             </div>
@@ -111,9 +110,9 @@
 <div id="authOverlay" class="auth-overlay" style="display:none;">
     <div class="auth-left">
         <div class="auth-brand">
-            <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
-                <path d="M50 10L10 80H35L50 50L65 80H90L50 10Z" fill="#7c6df0"/>
-                <path d="M25 60H75" stroke="#00d4aa" stroke-width="6" stroke-linecap="round"/>
+            <svg width="38" height="38" viewBox="0 0 100 100" fill="none">
+                <rect width="100" height="100" rx="18" fill="#fff"/>
+                <path fill-rule="evenodd" d="M50,16 L15,84 H32 L39,63 H61 L68,84 H85 L50,16 Z M44,55 L50,30 L56,55 Z" fill="#000"/>
             </svg>
             <span>AryaX</span>
         </div>
@@ -130,14 +129,38 @@
     <div class="auth-right">
         <div class="auth-box">
             <div class="auth-box-logo">
-                <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
-                    <path d="M50 10L10 80H35L50 50L65 80H90L50 10Z" fill="#7c6df0"/>
-                    <path d="M25 60H75" stroke="#00d4aa" stroke-width="5" stroke-linecap="round"/>
+                <svg width="30" height="30" viewBox="0 0 100 100" fill="none">
+                    <rect width="100" height="100" rx="14" fill="#0a0a0a"/>
+                    <path fill-rule="evenodd" d="M50,16 L15,84 H32 L39,63 H61 L68,84 H85 L50,16 Z M44,55 L50,30 L56,55 Z" fill="white"/>
                 </svg>
                 <span>AryaX</span>
             </div>
             <h2 id="authTitle">Welcome back</h2>
             <p id="authSubtitle" class="auth-sub">Sign in to continue to AryaX</p>
+
+            <!-- SOCIAL LOGIN BUTTONS -->
+            <div class="social-btns">
+                <button class="social-btn" id="googleBtn" onclick="socialLogin('google')">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                    Continue with Google
+                </button>
+                <button class="social-btn" id="appleBtn" onclick="socialLogin('apple')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                    Continue with Apple
+                </button>
+                <button class="social-btn" id="githubBtn" onclick="socialLogin('github')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    Continue with GitHub
+                </button>
+                <button class="social-btn" id="phoneBtn" onclick="showPhoneAuth()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+                    Continue with Phone
+                </button>
+            </div>
+
+            <div class="auth-divider"><span>or</span></div>
+
+            <!-- EMAIL/USERNAME FORM -->
             <form id="authForm">
                 <div class="form-group">
                     <label>Username</label>
@@ -145,20 +168,101 @@
                 </div>
                 <div id="signupFields" style="display:none;">
                     <div class="form-group">
-                        <label>Email <span style="opacity:.5">(optional)</span></label>
-                        <input type="email" id="authEmail" placeholder="you@example.com">
+                        <label>Full Name <span class="req-star">*</span></label>
+                        <input type="text" id="authFullName" placeholder="Enter your full name" autocomplete="name">
                     </div>
                     <div class="form-group">
-                        <label>Mobile <span style="opacity:.5">(optional)</span></label>
-                        <input type="text" id="authMobile" placeholder="+91 xxxxx xxxxx">
+                        <label>Email <span class="req-star">*</span></label>
+                        <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number <span class="req-star">*</span></label>
+                        <div class="phone-input-row">
+                            <select id="signupCountryCode" class="country-select">
+                                <option value="+91">🇮🇳 +91</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+971">🇦🇪 +971</option>
+                                <option value="+61">🇦🇺 +61</option>
+                                <option value="+65">🇸🇬 +65</option>
+                                <option value="+49">🇩🇪 +49</option>
+                                <option value="+33">🇫🇷 +33</option>
+                                <option value="+81">🇯🇵 +81</option>
+                                <option value="+86">🇨🇳 +86</option>
+                            </select>
+                            <input type="tel" id="authMobile" placeholder="10-digit number" maxlength="10"
+                                oninput="this.value=this.value.replace(/\D/g,'').slice(0,10); validatePhone(this);"
+                                autocomplete="tel">
+                        </div>
+                        <div class="field-hint" id="phoneHint"></div>
                     </div>
                 </div>
+
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="authPass" placeholder="Enter password" required autocomplete="current-password">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+                        <label style="margin:0;">Password <span class="req-star">*</span></label>
+                        <span class="forgot-link" id="forgotPassBtn" onclick="showForgotPassword()">Forgot password?</span>
+                    </div>
+                    <div class="pass-wrapper">
+                        <input type="password" id="authPass" placeholder="Min. 8 characters" required autocomplete="new-password"
+                            oninput="checkPasswordStrength(this.value)">
+                        <button type="button" class="eye-btn" onclick="togglePass('authPass', this)" tabindex="-1">
+                            <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="eye-closed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                    <div class="pass-strength" id="passStrength" style="display:none;">
+                        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                        <span class="strength-label" id="strengthLabel"></span>
+                    </div>
                 </div>
+                <div class="form-group" id="confirmPassGroup" style="display:none;">
+                    <label>Confirm Password <span class="req-star">*</span></label>
+                    <div class="pass-wrapper">
+                        <input type="password" id="authConfirmPass" placeholder="Re-enter password"
+                            oninput="checkPasswordMatch()" autocomplete="new-password">
+                        <button type="button" class="eye-btn" onclick="togglePass('authConfirmPass', this)" tabindex="-1">
+                            <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="eye-closed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                    <div class="field-hint" id="confirmHint"></div>
+                </div>
+                <div id="termsGroup" style="display:none;margin-bottom:12px;">
+                    <label class="terms-check">
+                        <input type="checkbox" id="termsCheck">
+                        <span>I agree to the <a href="#" style="color:var(--text);text-underline-offset:3px;">Terms</a> &amp; <a href="#" style="color:var(--text);">Privacy Policy</a></span>
+                    </label>
+                </div>
+                <!-- CAPTCHA -->
+                <div class="captcha-box" id="captchaBox">
+                    <div class="captcha-check-row" id="captchaCheckRow" onclick="openCaptchaChallenge()">
+                        <div class="captcha-checkbox" id="captchaCheckbox">
+                            <svg id="captchaCheckIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display:none;"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <span id="captchaLabel">I'm not a robot</span>
+                        <div class="captcha-logo">
+                            <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+                                <rect width="40" height="40" rx="8" fill="rgba(255,255,255,.06)"/>
+                                <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="white">🤖</text>
+                            </svg>
+                            <span style="font-size:8px;color:var(--muted);text-align:center;line-height:1.2;">reCAPTCHA<br>Privacy·Terms</span>
+                        </div>
+                    </div>
+                    <!-- Math challenge (shown after checkbox click) -->
+                    <div class="captcha-challenge" id="captchaChallenge" style="display:none;">
+                        <p class="captcha-q">Solve to verify: <strong id="captchaQuestion"></strong></p>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <input type="number" id="captchaAnswer" class="captcha-input" placeholder="Answer" min="0" max="999">
+                            <button type="button" class="captcha-verify-btn" onclick="verifyCaptcha()">Verify</button>
+                            <button type="button" class="captcha-refresh-btn" onclick="refreshCaptcha()" title="New question">↻</button>
+                        </div>
+                        <div id="captchaError" style="font-size:11px;color:rgba(255,100,100,.8);margin-top:5px;"></div>
+                    </div>
+                </div>
+
                 <button type="submit" class="auth-btn" id="authBtn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <span id="authBtnText">Sign In</span>
                 </button>
                 <div id="authError" class="auth-error"></div>
@@ -170,6 +274,62 @@
         </div>
     </div>
 </div>
+
+<!-- ── PHONE AUTH MODAL ── -->
+<div id="phoneModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9000;display:none;align-items:center;justify-content:center;">
+    <div class="phone-modal-card">
+        <button onclick="document.getElementById('phoneModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#666;font-size:20px;cursor:pointer;">×</button>
+        <h3 style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;">Phone Sign In</h3>
+        <p style="color:#666;font-size:13px;margin-bottom:20px;">We'll send a verification code to your number</p>
+        <div id="phoneStep1">
+            <div class="form-group">
+                <label>Phone Number</label>
+                <div style="display:flex;gap:8px;">
+                    <select id="countryCode" style="padding:12px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-family:var(--font);font-size:13px;outline:none;width:100px;">
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+65">🇸🇬 +65</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+86">🇨🇳 +86</option>
+                    </select>
+                    <input type="tel" id="phoneInput" placeholder="Enter phone number" style="flex:1;padding:12px 14px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-family:var(--font);font-size:14px;outline:none;">
+                </div>
+            </div>
+            <button class="auth-btn" onclick="sendOTP()" style="margin-top:4px;">Send OTP</button>
+        </div>
+        <div id="phoneStep2" style="display:none;">
+            <p style="color:#888;font-size:13px;margin-bottom:14px;">Enter the 6-digit code sent to your number</p>
+            <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
+                <input class="otp-box" maxlength="1" type="tel"><input class="otp-box" maxlength="1" type="tel"><input class="otp-box" maxlength="1" type="tel">
+                <input class="otp-box" maxlength="1" type="tel"><input class="otp-box" maxlength="1" type="tel"><input class="otp-box" maxlength="1" type="tel">
+            </div>
+            <button class="auth-btn" onclick="verifyOTP()">Verify & Sign In</button>
+            <p style="text-align:center;margin-top:12px;font-size:12px;color:#666;">Didn't receive? <span style="cursor:pointer;text-decoration:underline;color:var(--text);" onclick="sendOTP()">Resend</span></p>
+        </div>
+        <div id="phoneError" style="color:rgba(255,100,100,.8);font-size:12px;margin-top:10px;"></div>
+    </div>
+</div>
+
+<!-- ── FORGOT PASSWORD MODAL ── -->
+<div id="forgotModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9000;align-items:center;justify-content:center;">
+    <div class="phone-modal-card">
+        <button onclick="document.getElementById('forgotModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#666;font-size:20px;cursor:pointer;">×</button>
+        <h3 style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;">Reset Password</h3>
+        <p style="color:#666;font-size:13px;margin-bottom:20px;">Enter your username or email to reset your password</p>
+        <div class="form-group">
+            <label>Username or Email</label>
+            <input type="text" id="resetInput" placeholder="Enter username or email">
+        </div>
+        <button class="auth-btn" onclick="sendReset()" style="margin-top:4px;">Send Reset Link</button>
+        <div id="resetMsg" style="font-size:12px;margin-top:10px;text-align:center;color:#888;"></div>
+    </div>
+</div>
+
 
 <!-- ═══════════════════════════════════════════════ -->
 <!--  SCANNER OVERLAY                               -->
@@ -191,8 +351,8 @@
         <div class="panel-header">
             <div class="mini-logo">
                 <svg width="28" height="28" viewBox="0 0 100 100" fill="none">
-                    <path d="M50 10L10 80H35L50 50L65 80H90L50 10Z" fill="#7c6df0"/>
-                    <path d="M25 60H75" stroke="#00d4aa" stroke-width="6" stroke-linecap="round"/>
+                    <path d="M50 10L10 80H35L50 50L65 80H90L50 10Z" fill="#fff"/>
+                    <path d="M25 60H75" stroke="#888" stroke-width="6" stroke-linecap="round"/>
                 </svg>
                 <span>AryaX</span>
             </div>
@@ -244,7 +404,15 @@
             </div>
         </div>
 
-        <div class="section-label">History</div>
+        <div class="section-label">History <span style="float:right;font-size:9px;color:var(--muted);cursor:pointer;" onclick="clearHistory()">Clear</span></div>
+        <div class="search-wrap">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="chatSearch" type="text" placeholder="Search chats..." oninput="filterChats(this.value)">
+        </div>
+        <div id="pinnedSection" style="display:none;margin-bottom:6px;">
+            <div class="section-label" style="font-size:9px;margin-top:4px;">Pinned</div>
+            <nav id="pinnedList" class="session-list"></nav>
+        </div>
         <nav id="recentList" class="session-list"></nav>
 
         <div class="panel-footer">
@@ -260,6 +428,9 @@
                         <div id="creditCount" class="credit-badge-sm">0 credits</div>
                     </div>
                 </div>
+                <button id="profileBtn" class="action-icon" title="Profile" onclick="openProfile()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
                 <button id="logoutBtn" class="action-icon" title="Logout">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </button>
@@ -278,24 +449,28 @@
             </div>
             <div class="nav-right">
                 <span id="creditDisplay" class="credit-badge">10,000 Credits</span>
+                <button onclick="openExportMenu()" class="nav-icon-btn" title="Export Chat (Ctrl+E)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+                <button onclick="openCommandPalette()" class="nav-icon-btn" title="Command Palette (Ctrl+K)">⌘K</button>
             </div>
         </header>
 
         <div id="chat" class="message-stream">
             <div class="welcome-hero">
                 <div class="welcome-icon">
-                    <svg width="48" height="48" viewBox="0 0 100 100" fill="none">
-                        <path d="M50 10L10 80H35L50 50L65 80H90L50 10Z" fill="#7c6df0" opacity="0.9"/>
-                        <path d="M25 60H75" stroke="#00d4aa" stroke-width="6" stroke-linecap="round"/>
+                    <svg width="52" height="52" viewBox="0 0 100 100" fill="none">
+                        <rect width="100" height="100" rx="20" fill="rgba(255,255,255,0.08)"/>
+                        <path fill-rule="evenodd" d="M50,16 L15,84 H32 L39,63 H61 L68,84 H85 L50,16 Z M44,55 L50,30 L56,55 Z" fill="white"/>
                     </svg>
                 </div>
                 <h1>How can I help you today?</h1>
                 <p>I am AryaX, your Artificial Super Intelligence. Ask me anything — from coding to creative writing, business to science.</p>
                 <div class="quick-actions">
-                    <button class="quick-btn" onclick="quickAsk('Write a Python web scraper')">⚡ Write Python code</button>
-                    <button class="quick-btn" onclick="quickAsk('Create a business plan for my startup')">💼 Business plan</button>
-                    <button class="quick-btn" onclick="quickAsk('Generate an image of a futuristic city')">🎨 Generate image</button>
-                    <button class="quick-btn" onclick="quickAsk('Explain quantum computing simply')">🔬 Explain a concept</button>
+                    <button class="quick-btn" onclick="quickAsk('Write a Python web scraper')">Write Python Code</button>
+                    <button class="quick-btn" onclick="quickAsk('Create a business plan for my startup')">Business Plan</button>
+                    <button class="quick-btn" onclick="quickAsk('Generate an image of a futuristic city')">Generate Image</button>
+                    <button class="quick-btn" onclick="quickAsk('Explain quantum computing simply')">Explain a Concept</button>
                 </div>
             </div>
         </div>
@@ -345,8 +520,71 @@
         <iframe id="previewFrame" title="Live Preview"></iframe>
     </aside>
 </div>
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="big-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeProfile()">×</button>
+    <div class="modal-title">My Profile</div>
+    <div class="profile-avatar-big" id="profileAvatarBig">AX</div>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:700;" id="profileName">Account</div>
+      <div style="font-size:12px;color:var(--muted);" id="profileJoined">Member</div>
+    </div>
+    <div class="profile-stat-row">
+      <div class="profile-stat"><div class="num" id="statMsgs">0</div><div class="lbl">Messages</div></div>
+      <div class="profile-stat"><div class="num" id="statCredits">0</div><div class="lbl">Credits</div></div>
+      <div class="profile-stat"><div class="num" id="statChats">0</div><div class="lbl">Chats</div></div>
+    </div>
+    <div style="margin-top:16px;">
+      <div class="setting-row">
+        <label>AI Persona Tone</label>
+        <select id="personaTone" onchange="savePersona()">
+          <option value="balanced">Balanced</option>
+          <option value="formal">Formal</option>
+          <option value="casual">Casual</option>
+          <option value="expert">Expert</option>
+          <option value="concise">Concise</option>
+          <option value="creative">Creative</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>AI Name</label>
+        <input type="text" id="personaName" value="AryaX" placeholder="Custom AI name" onchange="savePersona()">
+      </div>
+      <div class="setting-row">
+        <label>Memory Mode</label>
+        <div class="toggle-sw" id="memoryToggle" onclick="this.classList.toggle('on');savePersona();"></div>
+      </div>
+      <div class="setting-row">
+        <label>Stream Responses</label>
+        <div class="toggle-sw on" id="streamToggle" onclick="this.classList.toggle('on');savePersona();"></div>
+      </div>
+    </div>
+    <button class="auth-btn" onclick="closeProfile()" style="margin-top:20px;">Save & Close</button>
+  </div>
+</div>
 
-<!-- SCREENSHOT SHIELD -->
+<!-- COMMAND PALETTE -->
+<div id="cmdPalette" class="cmd-palette" onclick="if(event.target===this)closeCmdPalette()">
+  <div class="cmd-box">
+    <div class="cmd-input-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="cmd-input" id="cmdInput" placeholder="Type a command..." oninput="filterCommands(this.value)" onkeydown="cmdKeyNav(event)">
+      <span style="font-size:10px;color:var(--muted);border:1px solid var(--border);padding:2px 6px;border-radius:4px;">ESC</span>
+    </div>
+    <div class="cmd-results" id="cmdResults"></div>
+  </div>
+</div>
+
+<!-- EXPORT MENU -->
+<div id="exportMenu" class="export-menu" onclick="event.stopPropagation()">
+  <div class="export-item" onclick="exportChat('json')">📄 Export as JSON</div>
+  <div class="export-item" onclick="exportChat('txt')">📝 Export as Text</div>
+  <div class="export-item" onclick="exportChat('md')">📋 Export as Markdown</div>
+  <div class="export-item" onclick="exportChat('pdf')">🗒️ Export as PDF</div>
+</div>
+
+
 <div id="screenshotShield" style="display:none; position:fixed; inset:0; background:#000; z-index:99999; color:#fff; align-items:center; justify-content:center; flex-direction:column; font-family:'Outfit',sans-serif; font-weight:800; font-size:32px; letter-spacing:3px;">
     SECURITY PROTOCOL ACTIVE
     <span style="font-size:15px; color:#888; margin-top:12px; font-weight:400; letter-spacing:1px;">Screenshots are restricted.</span>
@@ -365,10 +603,10 @@
 <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 <style>
-    .chart-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; margin: 12px 0; width: 100%; max-width: 500px; }
-    .download-pill { display: inline-flex; align-items: center; gap: 8px; background: #7c6df0; color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 13px; text-decoration: none; margin-top: 8px; transition: 0.2s; font-weight: 600; }
-    .download-pill:hover { opacity: 0.85; transform: translateY(-1px); }
+    .chart-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;margin:12px 0;width:100%;max-width:500px;}
+    .download-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;text-decoration:none;margin-top:8px;transition:.2s;font-weight:600;border:1px solid rgba(255,255,255,.15);}
+    .download-pill:hover{background:rgba(255,255,255,.14);transform:translateY(-1px);}
 </style>
-<script src="script.js?v=4.0"></script>
+<script src="script.js?v=4.3"></script>
 </body>
 </html>
