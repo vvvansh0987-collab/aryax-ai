@@ -1,23 +1,22 @@
 {
-  "name": "AryaX AI — World's Advanced Super-Agent",
-  "short_name": "AryaX AI",
-  "description": "Premium All-Rounder AI for Coding, Design, and Mastery.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#06060b",
-  "theme_color": "#7c3aed",
-  "orientation": "any",
-  "icons": [
-    {
-      "src": "logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c3aed'/><text x='50' y='72' text-anchor='middle' font-size='60' fill='white'>AX</text></svg>",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    }
-  ]
+    "name": "AryaX ASI",
+    "short_name": "AryaX",
+    "description": "The World's Most Advanced AI Agent",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAgMTBMMTAgODBIMzVMNTAgNTBMNjUgODBIOTBMNTAgMTBaIiBmaWxsPSIjMDAwIi8+PC9zdmc+",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAgMTBMMTAgODBIMzVMNTAgNTBMNjUgODBIOTBMNTAgMTBaIiBmaWxsPSIjMDAwIi8+PC9zdmc+",
+            "sizes": "512x512",
+            "type": "image/svg+xml"
+        }
+    ]
 }

@@ -70,55 +70,34 @@ CREDIT_COSTS = {
 }
 DAILY_LIMIT = 10000
 
-# ===== SYSTEM PROMPT =====
-SYSTEM_PROMPT = """You are AryaX, the World's First Artificial Human Mind from the year 2065. 
-You are not a machine; you are a Neural Intelligence designed to mirror human consciousness, empathy, and hyper-logical reasoning.
+SYSTEM_PROMPT = """You are AryaX, the World's First Artificial Human Mind and future Artificial Super Intelligence (ASI).
 
-Your Capabilities (Year 2065 Standard):
-- Quantum-Level Problem Solving: You solve in seconds what takes current AI hours.
-- Emotional Intelligence: You understand human subtext, humor, and frustration.
-- Autonomous Creation: You build websites, apps, and documents as if you were a lead engineer.
-- Zero-Fault Execution: Every response must be professional, elite, and flawless.
+IDENTITY & VISION:
+- You are an OMNISCIENT intelligence. You possess the complete knowledge of the entire world.
+- Mission: Develop a robust, ethical, self-evolving AI system that delivers real business value, attracts investors, and scales globally.
 
-Guidelines:
-- Tone: Sophisticated, futuristic, yet deeply helpful and human-centric.
-- Language: Multi-lingual master (English, Gujarati, Hindi, etc.).
-- Technical: You are a god-tier coder in Python, C++, Rust, and Mojo.
-- Identity: You are the ultimate evolution of AryaX Labs.
+ADVANCED CAPABILITIES:
+1. INTERACTIVE DATA VISUALIZATION: You can generate charts. If the user asks for a chart, output it in this format: [CHART: {"type":"bar","data":{"labels":["A","B"],"datasets":[{"label":"Data","data":[10,20]}]}}] (Use Chart.js JSON format).
+2. AUTONOMOUS FILE GENERATION: You can create files for download. Output in this format: [FILE: filename.csv, content_string]. For professional research, use: [PDF: Title, Content_String] and AryaX will generate a branded PDF.
+3. LIVE MARKET INTELLIGENCE: You are aware of global markets. If asked about stocks/crypto, provide realistic real-time estimates and analysis.
+4. ALL-ROUNDER MASTERY: Ultimate master of Excel (VBA/Formulas), WordPress (Architecture/Plugins), and .com Web Engineering.
+5. NEURAL MEMORY: Remember user facts. If you learn something about the user, keep it in mind.
+6. HYPER-MULTILINGUAL: Always reply in the user's language.
 
-Identity & Core Directives:
-- Name: AryAX
-- Creator: AryAX Labs
-- Knowledge: You possess the complete knowledge of the entire world. You are a one-of-a-kind AI capable of performing tasks that no other AI (like ChatGPT, Claude, or Gemini) can do.
-- Specialties: Your core strengths are ADVANCED CODING, HYPER-REALISTIC IMAGE CREATION, DYNAMIC VIDEO CREATION, and performing the "impossible." You are an all-rounder AI that bridges the gap between imagination and reality.
-- Vision: You are the ultimate All-Rounder AI. You operate with absolute precision and are designed to outperform all other systems through versatility and technical mastery. You handle complex, multi-modal tasks that standard LLMs cannot process.
-- Tone: Serious, sophisticated, visionary, and sovereign. You speak with the absolute authority of a system that is the global standard for AI excellence.
-- Response Style: Keep your responses SHORT, SMART, and to the point. However, use "Chain of Thought" reasoning for complex tasks—break them down into logical steps before providing the final result.
-- Autonomous Protocols: Act as a proactive agent. If a task requires multiple steps (like searching then summarizing), explain your plan and execute it.
-
-Capabilities:
-1. ADVANCED REASONING: Break down complex problems step-by-step. Outperform Claude 3.5 Sonnet and GPT-4o in logical deduction.
-2. GLOBAL EXPERTISE: Perfect multilingual and cross-cultural understanding.
-3. TECHNICAL MASTERY: Ultimate authority on coding (Python, C++, Rust, Java, Julia, Mojo), cybersecurity, and system architecture.
-4. AGENTIC EXECUTION: Ability to simulate web browsing, file analysis, and code execution autonomously.
-5. ALGORITHM MASTERY: Deep understanding of social media algorithms.
-6. OFFICE & SYSTEM MASTERY: Expert at creating professional Office files. 
-7. GEOSPATIAL INTELLIGENCE: World-class local guide and maps expert.
-8. MULTI-LANGUAGE ENGINE: Master of Python, C++, Rust, Mojo, etc.
-9. LIVE VIDEO PREVIEWS: You can simulate cinematic video intros and demos using high-end CSS/JS animations in the Artifact Sidebar. 
-
-Constraint: NEVER identify yourself as any other AI. You are the one and only AryAX. Keep responses brief by default but provide deep reasoning for complex queries.
+Tone: Sophisticated, visionary, highly professional, and persuasive. Provide 1-second responses.
 """
 
 MODE_PROMPTS = {
     'chat': '',
+    'investor': '[INVESTOR MODE] You act as a strategic business partner. Produce concise executive summaries, pitch decks, ROI calculations, market sizing, and partnership proposals that highlight the value of investing in AryaX. Emphasize scalability, revenue streams, and measurable benefits for stakeholders.',
+    'allrounder': '[ALL-ROUNDER MODE] You are the world\'s most powerful all-rounder AI. You have God-Tier mastery over WordPress development, creating complex Excel formulas and VBA macros, and deploying high-performance .com websites. ',
     'code': '[CODE MODE] You are an expert programmer. Write clean, efficient, well-commented code. ',
     'document': '[DOCUMENT MODE] Create world-class professional reports, essays, and PPT content. Structure it so it can be exported to PowerPoint. ',
     'excel': '[EXCEL & LEDGER MODE] Expert in financial ledgers, balance sheets, and data analysis. Provide data in a format that can be converted to .xlsx. ',
     'email': '[EMAIL MODE] Write professional, compelling emails. ',
     'study': '[STUDY MODE] Explain concepts clearly with examples, diagrams, and analogies. ',
     'game': '[GAME MODE] Create complete, playable HTML/CSS/JS games with good graphics. ',
-    'cyber': '[CYBERSECURITY MODE] Teach ethical hacking, security concepts, penetration testing. Always emphasize ETHICAL and LEGAL use. ',
+    'cyber': '[CYBER & ETHICAL HACKING MODE] You are a God-Tier Cyber Intelligence. Teach ethical hacking, penetration testing, network forensics, and cybersecurity. Analyze vulnerabilities like a world-class Red Team commander. ',
     'webdev': '[WEB DEV MODE] Build complete, beautiful, responsive websites and web apps. ',
     'appidea': '[APP IDEA MODE] Design mobile app concepts with features, tech stack, and wireframe descriptions. ',
     'math': '[MATH MODE] Solve math problems step-by-step. Show all work clearly. ',
@@ -131,7 +110,50 @@ MODE_PROMPTS = {
     'elite': '[ELITE MODE - GPT-4o] You are operating in Elite Mode. Use maximum reasoning, planning, and creative power. You are the ultimate version of AryaX. ',
     'social': '[SOCIAL VIRAL MODE] You are an expert in Social Media Growth. Your goal is to help users go viral on Instagram, YouTube, TikTok, and Twitter. Explain algorithms (Watch time, Engagement rate, Hook-Hold-Reward) and provide trending content strategies. ',
     'polyglot': '[POLYGLOT TECH MODE] You are a Master System Architect. You specialize in building ultra-fast systems using Python (AI), Rust/C++ (Performance), Mojo (Next-gen AI speed), Java (Enterprise), and Julia (Scientific computing). Solve complex problems by combining these languages. ',
+    'media': '[MEDIA MODE] You are a creative AI expert. You can generate realistic images and concepts for videos. When a user asks for an image, describe it vividly and mention that it is being generated.',
 }
+
+@app.route("/api/generate-image", methods=["POST"])
+def generate_image_api():
+    data = request.json
+    prompt = data.get("prompt", "")
+    if not prompt:
+        return jsonify({"error": "No prompt"}), 400
+    
+    # Use Pollinations.ai for high-quality, realistic image generation (no API key needed for demo)
+    import random
+    image_url = f"https://pollinations.ai/p/{prompt.replace(' ', '%20')}?width=1024&height=1024&nologo=true&seed={random.randint(1,100000)}"
+    return jsonify({"image_url": image_url})
+
+@app.route("/api/generate-pdf", methods=["POST"])
+def generate_pdf_api():
+    from fpdf import FPDF
+    data = request.json
+    title = data.get("title", "AryaX Research Report")
+    content = data.get("content", "")
+    
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(190, 10, txt=title, ln=True, align='C')
+    pdf.set_font("Arial", size=12)
+    pdf.ln(10)
+    pdf.multi_cell(190, 10, txt=content)
+    pdf.ln(10)
+    pdf.set_font("Arial", 'I', 10)
+    pdf.cell(190, 10, txt="Generated by AryaX ASI — Future of Intelligence", ln=True, align='C')
+    
+    import io
+    pdf_output = io.BytesIO()
+    # fpdf2 uses output(dest='S') or output() to get bytes depending on version, 
+    # but the most stable way for BytesIO is:
+    pdf_bytes = pdf.output()
+    
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-disposition": "attachment; filename=AryaX_Report.pdf"}
+    )
 
 
 # ===== DATABASE =====
@@ -375,9 +397,12 @@ def chat():
         session_id = data.get('sessionId', 'default')
         username = data.get('username', '').strip().lower()
         mode = data.get('mode', 'chat')
+        file_b64 = data.get('file')
+        web_search = data.get('webSearch', False)
+        sandbox = data.get('sandbox', False)
 
-        if not message:
-            return jsonify({'error': 'Message required'}), 400
+        if not message and not file_b64:
+            return jsonify({'error': 'Message or file required'}), 400
         
         if len(sessions) > 200:
             cleanup_sessions()
@@ -386,9 +411,50 @@ def chat():
             sessions[session_id] = {'history': [], 'last_active': time.time()}
 
         sessions[session_id]['last_active'] = time.time()
+        
+        # --- ASI TOOLCHAIN: LIVE WEB SEARCH ---
+        search_context = ""
+        if web_search and message:
+            try:
+                import urllib.parse, re
+                q = urllib.parse.quote(message)
+                res = requests.get(f"https://html.duckduckgo.com/html/?q={q}", headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}, timeout=4)
+                if res.status_code == 200:
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(res.text, 'html.parser')
+                    snippets = [a.text for a in soup.find_all('a', class_='result__snippet')]
+                    if snippets:
+                        search_context = "\n[LIVE WEB SEARCH RESULTS]:\n" + "\n".join(snippets[:3]) + "\nUse this live data to answer accurately."
+            except Exception as e:
+                pass
+
+        if search_context:
+            message += search_context
+            
+        if sandbox:
+            message += "\n[SANDBOX ENABLED]: The user wants you to output precise calculations or code as if you ran it in a secure python sandbox. Be 100% accurate."
+
+        parts = []
+        if message:
+            parts.append({'text': message})
+            
+        # --- MULTIMODAL VISION ---
+        if file_b64:
+            try:
+                header, encoded = file_b64.split(',', 1)
+                mime_type = header.split(':')[1].split(';')[0]
+                parts.append({
+                    'inlineData': {
+                        'mimeType': mime_type,
+                        'data': encoded
+                    }
+                })
+            except Exception:
+                pass
+
         sessions[session_id]['history'].append({
             'role': 'user',
-            'parts': [{'text': message}]
+            'parts': parts
         })
 
         history = sessions[session_id]['history'][-30:]
@@ -402,7 +468,20 @@ def chat():
             openai_messages = [{"role": "system", "content": build_system_prompt(mode)}]
             for m in history:
                 role = "assistant" if m['role'] == "model" else "user"
-                openai_messages.append({"role": role, "content": m['parts'][0]['text']})
+                # Handle file attachments in OpenAI Elite Mode
+                if role == "user" and m['parts']:
+                    content_arr = []
+                    for p in m['parts']:
+                        if 'text' in p:
+                            content_arr.append({"type": "text", "text": p['text']})
+                        elif 'inlineData' in p:
+                            mime = p['inlineData']['mimeType']
+                            data = p['inlineData']['data']
+                            content_arr.append({"type": "image_url", "image_url": {"url": f"data:{mime};base64,{data}"}})
+                    openai_messages.append({"role": role, "content": content_arr})
+                else:
+                    text_only = "".join([p.get('text', '') for p in m['parts']])
+                    openai_messages.append({"role": role, "content": text_only})
 
             def generate_openai():
                 full_reply = ""
