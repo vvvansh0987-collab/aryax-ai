@@ -1,0 +1,9 @@
+@echo off
+echo ==============================================
+echo Starting AryaX AI Server...
+echo ==============================================
+echo Checking and Installing Dependencies...
+call .\.venv\Scripts\pip.exe install -r requirements.txt
+echo Starting AryaX AI Server...
+call .\.venv\Scripts\python.exe app.py
+pause

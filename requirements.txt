@@ -11,3 +11,4 @@ python-pptx
 pandas
 openpyxl
 fpdf2
+beautifulsoup4

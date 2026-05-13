@@ -434,6 +434,21 @@ async function loginSuccess(username, credits) {
         const un = $('userName');
         if (un) un.textContent = username;
         if (creditDisp) creditDisp.textContent = `${credits || 10000} Credits`;
+        
+        // Fetch and show Rank
+        fetch(`/api/user/rank?username=${username}`)
+            .then(res => res.json())
+            .then(data => {
+                const rankEl = document.createElement('div');
+                rankEl.id = 'userRank';
+                rankEl.style.cssText = 'font-size:10px; color:var(--accent); font-weight:800; text-transform:uppercase; margin-top:5px; letter-spacing:1.5px; opacity:0.8;';
+                rankEl.textContent = `🧬 RANK: ${data.rank}`;
+                const parent = creditDisp.parentElement;
+                const existing = document.getElementById('userRank');
+                if (existing) existing.remove();
+                parent.appendChild(rankEl);
+            });
+
         loadHistory();
         newChatSession();
         injectWatermark(username);
@@ -589,18 +604,98 @@ $('imageBtn').onclick = async () => {
     } catch { botText.textContent = 'Error generating image.'; }
 };
 
-// ── VOICE ─────────────────────────────────────────────
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const micBtn = $('micBtn');
-if (SR) {
-    const rec = new SR();
-    rec.onresult = e => { inputEl.value += e.results[0][0].transcript; micBtn.classList.remove('active'); };
-    rec.onerror = rec.onend = () => micBtn.classList.remove('active');
-    micBtn.onclick = () => {
-        if (micBtn.classList.contains('active')) { rec.stop(); micBtn.classList.remove('active'); }
-        else { rec.start(); micBtn.classList.add('active'); }
-    };
-} else { micBtn.style.display = 'none'; }
+// ── NEURAL VOICE ENGINE V3 (10 VOICES + WAKE WORD) ────
+class NeuralVoiceV3 {
+    constructor() {
+        this.synth = window.speechSynthesis;
+        this.voices = [];
+        this.currentVoiceIndex = 0;
+        this.isListening = false;
+        this.recognition = null;
+        this.initVoices();
+        this.initWakeWord();
+    }
+
+    initVoices() {
+        const load = () => {
+            this.voices = this.synth.getVoices().slice(0, 10);
+            if (this.voices.length < 10) {
+                // Fallback if system has fewer than 10 voices
+                console.log("System has fewer than 10 voices, using available.");
+            }
+        };
+        load();
+        if (this.synth.onvoiceschanged !== undefined) this.synth.onvoiceschanged = load;
+    }
+
+    setVoice(index) {
+        if (index >= 0 && index < this.voices.length) {
+            this.currentVoiceIndex = index;
+            showToast(`Voice Switched to: ${this.voices[index].name}`);
+        }
+    }
+
+    speak(text) {
+        this.synth.cancel();
+        const cleanText = text.replace(/\[.*?\]/g, '').replace(/[*#`_]/g, '');
+        const utt = new SpeechSynthesisUtterance(cleanText);
+        utt.voice = this.voices[this.currentVoiceIndex];
+        utt.rate = 1.0;
+        this.synth.speak(utt);
+    }
+
+    initWakeWord() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return;
+
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = true;
+        this.recognition.interimResults = false;
+        this.recognition.lang = 'en-US';
+
+        this.recognition.onresult = (event) => {
+            const last = event.results.length - 1;
+            const text = event.results[last][0].transcript.toLowerCase();
+            
+            if (text.includes('hey arya') || text.includes('hey aryax')) {
+                showToast("Wake Word Detected!");
+                this.speak("I am listening, Master. How can I help you today?");
+                // Trigger actual message input if needed
+                setTimeout(() => { if($('input')) $('input').focus(); }, 1000);
+            }
+        };
+
+        this.recognition.onend = () => { if(this.isListening) this.recognition.start(); };
+    }
+
+    startListening() {
+        this.isListening = true;
+        try { this.recognition.start(); showToast("Neural Listener: ACTIVE"); } catch(e){}
+    }
+    stopListening() {
+        this.isListening = false;
+        try { this.recognition.stop(); showToast("Neural Listener: OFF"); } catch(e){}
+    }
+}
+
+const voiceASI = new NeuralVoiceV3();
+
+// ── UI HELPERS ────────────────────────────────────────
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast-asi';
+    t.textContent = msg;
+    t.style.cssText = `
+        position:fixed; bottom:120px; left:50%; transform:translateX(-50%);
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(59, 130, 246, 0.9));
+        backdrop-filter: blur(20px); color: white; padding: 12px 28px;
+        border-radius: 100px; font-size: 14px; font-weight: 600; z-index: 100000;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(168, 85, 247, 0.4);
+        animation: fadeInOut 4s forwards; font-family: 'Outfit', sans-serif;
+    `;
+    document.body.appendChild(t);
+    setTimeout(() => { if(t.parentNode) t.remove(); }, 4000);
+}
 
 // ── SIDEBAR TOGGLE ────────────────────────────────────
 $('toggleSidebar').onclick = () => {
@@ -609,11 +704,95 @@ $('toggleSidebar').onclick = () => {
     else sp.classList.toggle('closed');
 };
 
+// ── AUTO AGENT SWITCHER ───────────────────────────────
+function detectMood(text) {
+    const t = text.toLowerCase();
+    const avatar = $('neuralAvatar');
+    if (!avatar) return;
+    
+    avatar.classList.remove('happy', 'serious', 'calm');
+    if (/\b(happy|good|great|awesome|love|nice|yes|thanks|wow|fun)\b/.test(t)) {
+        avatar.classList.add('happy');
+    } else if (/\b(serious|important|urgent|problem|error|fix|help|code|work)\b/.test(t)) {
+        avatar.classList.add('serious');
+    } else {
+        avatar.classList.add('calm');
+    }
+}
+
+function autoSwitchAgent(text) {
+    const t = text.toLowerCase();
+    let newMode = null;
+
+    if (/\b(research|news|facts|data|statistics|report|source|history|find|search)\b/.test(t)) {
+        newMode = 'researcher';
+    } else if (/\b(code|design|structure|database|api|function|class|architecture|build|backend|frontend)\b/.test(t)) {
+        newMode = 'architect';
+    } else if (/\b(story|write|prompt|creative|script|poem|art|imagine|video|concept)\b/.test(t)) {
+        newMode = 'creative';
+    }
+
+    if (newMode && modeEl.value !== newMode) {
+        modeEl.value = newMode;
+        modeEl.onchange(); // Update label
+        showAgentToast(newMode);
+    }
+}
+
+function showAgentToast(agent) {
+    const toast = document.createElement('div');
+    const agentName = agent.charAt(0).toUpperCase() + agent.slice(1);
+    toast.style.cssText = `
+        position:fixed; top:30px; left:50%; transform:translateX(-50%);
+        background: rgba(10, 10, 15, 0.8);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        color: white;
+        padding: 10px 22px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(168, 85, 247, 0.2);
+        animation: fadeInOut 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    `;
+    toast.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+        <span style="letter-spacing: 0.5px; text-transform: uppercase;">Neural Shift: ${agentName} Active</span>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { if(toast.parentNode) toast.remove(); }, 3500);
+}
+
 // ── SEND MESSAGE ──────────────────────────────────────
+const micBtn = $('micBtn');
+micBtn.onclick = () => {
+    if (voiceASI.isListening) {
+        voiceASI.stopListening();
+        micBtn.classList.remove('active');
+        $('voiceStatus').style.display = 'none';
+    } else {
+        voiceASI.startListening();
+        micBtn.classList.add('active');
+        $('voiceStatus').style.display = 'block';
+    }
+};
+
 async function sendMessage() {
     const text = inputEl.value.trim();
     if (!text && !attachedFile) return;
     if (!currentUser) return;
+    
+    // Auto Agent Selection
+    autoSwitchAgent(text);
+    detectMood(text);
+
     if (!currentChatId) currentChatId = Date.now().toString();
 
     const welcome = chatArea.querySelector('.welcome-hero');
@@ -630,7 +809,7 @@ async function sendMessage() {
     fileInput.value = '';
     filePreview.style.display = 'none';
 
-    const botWrap = appendMessage('AryaX', 'Thinking...');
+    const botWrap = appendMessage('AryaX', '<div class="thinking-container"><div class="thinking-logo"></div><span class="terminal-cursor" style="margin-left:5px;"></span></div>');
     const botText = botWrap.querySelector('.msg');
 
     try {
@@ -724,6 +903,13 @@ async function sendMessage() {
         }
 
         handleCodePreview(fullReply);
+        
+        // Auto-Memory Detection
+        const memMatch = /\[MEMORY: (.*?), (.*?)\]/g.exec(fullReply);
+        if (memMatch) {
+            updateNeuralMemory(memMatch[1], memMatch[2]);
+        }
+
         saveHistory(text, fullReply);
     } catch (e) {
         botText.textContent = 'Connection lost. Please try again.';
@@ -764,33 +950,39 @@ function appendMessage(role, text, wrapClass = '') {
     const wrap = document.createElement('div');
     wrap.className = `msg-wrap ${wrapClass}`;
     const isBot = role !== 'You';
+    const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    
     let actions = '';
     if (isBot) {
-        actions = `<div class="msg-actions">
-            <button class="action-icon tts-btn" title="Listen" style="padding:4px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        actions = `<div class="msg-actions" style="display:flex;gap:8px;margin-top:8px;">
+            <button class="pill-btn tts-btn" title="Speak" style="padding:4px 10px; font-size:11px; display:flex; align-items:center; gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Speak
+            </button>
+            <button class="pill-btn copy-btn" title="Copy" style="padding:4px 10px; font-size:11px; display:flex; align-items:center; gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy
             </button>
         </div>`;
     }
+
     wrap.innerHTML = `
         <div class="msg-label" style="display:flex;justify-content:space-between;align-items:center;">
-            <span>${role}</span>${actions}
+            <span style="font-weight:700;color:var(--text);font-size:12px;">${role.toUpperCase()} <span style="font-weight:400;color:var(--muted);margin-left:8px;">${time}</span></span>
         </div>
-        <div class="msg ${isBot ? 'bot-msg' : 'user-msg'}">${marked.parse(text)}</div>`;
+        <div class="msg ${isBot ? 'bot-msg' : 'user-msg'}">${marked.parse(text)}</div>
+        ${actions}`;
+    
     chatArea.appendChild(wrap);
     chatArea.scrollTop = chatArea.scrollHeight;
 
     if (isBot) {
-        const btn = wrap.querySelector('.tts-btn');
-        if (btn) btn.onclick = () => {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(wrap.querySelector('.msg').innerText.replace(/[*#`]/g, ''));
-                const orb = $('voiceOrb');
-                msg.onstart = () => { if (orb) orb.style.display = 'flex'; };
-                msg.onend = msg.onerror = () => { if (orb) orb.style.display = 'none'; };
-                window.speechSynthesis.speak(msg);
-            }
+        const speakBtn = wrap.querySelector('.tts-btn');
+        const copyBtn = wrap.querySelector('.copy-btn');
+        const msgText = wrap.querySelector('.msg').innerText;
+        
+        if (speakBtn) speakBtn.onclick = () => voiceASI.speak(msgText);
+        if (copyBtn) copyBtn.onclick = () => {
+            navigator.clipboard.writeText(msgText);
+            showToast("Neural Content Copied!");
         };
     }
     return wrap;
@@ -812,6 +1004,8 @@ inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey)
                 const d = await r.json();
                 if (r.ok) {
                     loginSuccess(saved, d.credits);
+                    checkBroadcast();
+                    setInterval(checkBroadcast, 60000); // Check every minute
                 } else {
                     localStorage.removeItem('aryax-user');
                     showAuth();
@@ -1016,10 +1210,6 @@ function makeChatItem(c, isPinned) {
     return div;
 }
 
-// Override renderSidebar to use enhanced version
-const _origRenderSidebar = renderSidebar;
-function renderSidebar(chats) { renderSidebarFull(chats); }
-
 // ── AI PERSONA SYSTEM ─────────────────────────────────
 function getPersona() {
     return JSON.parse(localStorage.getItem('aryax-persona') || '{"tone":"balanced","name":"AryaX","memory":false}');
@@ -1027,3 +1217,566 @@ function getPersona() {
 
 // Inject persona into chat payload (override sendMessage to add persona context)
 const _origSendMessage = sendMessage;
+
+
+// ── NEURAL DASHBOARD ──────────────────────────────────
+async function openDashboard() {
+    if (!currentUser) return;
+    const overlay = $('dashboardOverlay');
+    overlay.style.display = 'flex';
+    
+    try {
+        const r = await fetch(`/api/user/dashboard?username=${currentUser}`);
+        const d = await r.json();
+        if (r.ok) {
+            $('dbRank').textContent = d.stats.rank;
+            $('dbChats').textContent = d.stats.total_chats;
+            $('dbCredits').textContent = d.stats.credits.toLocaleString();
+            
+            const list = $('memoryList');
+            list.innerHTML = '';
+            const memKeys = Object.keys(d.memory);
+            if (memKeys.length > 0) {
+                memKeys.forEach(k => {
+                    const item = document.createElement('div');
+                    item.className = 'memory-item';
+                    item.innerHTML = `<span class="m-key">${k}</span><span class="m-val">${d.memory[k]}</span>`;
+                    list.appendChild(item);
+                });
+            } else {
+                list.innerHTML = '<div class="empty-memory">No neural traces found yet. Talk to AryaX to build memory.</div>';
+            }
+        }
+    } catch (e) { console.error('Dashboard fetch failed', e); }
+    
+    initNeuralCore();
+}
+
+function closeDashboard() {
+    $('dashboardOverlay').style.display = 'none';
+    if (window.neuralRenderer) {
+        window.neuralRenderer.dispose();
+        $('neuralCanvas').innerHTML = '';
+    }
+}
+
+// ── THREE.JS NEURAL CORE ──────────────────────────────
+function initNeuralCore() {
+    const container = $('neuralCanvas');
+    if (!container || container.innerHTML !== '') return;
+    
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+    window.neuralRenderer = renderer;
+
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+    for (let i = 0; i < 2000; i++) {
+        vertices.push(THREE.MathUtils.randFloatSpread(20), THREE.MathUtils.randFloatSpread(20), THREE.MathUtils.randFloatSpread(20));
+    }
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    const material = new THREE.PointsMaterial({ color: 0xa855f7, size: 0.1, transparent: true, opacity: 0.6 });
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    camera.position.z = 12;
+
+    function animate() {
+        if (!window.neuralRenderer || $('dashboardOverlay').style.display === 'none') return;
+        requestAnimationFrame(animate);
+        points.rotation.y += 0.002;
+        points.rotation.x += 0.001;
+        try {
+            renderer.render(scene, camera);
+        } catch(e) {
+            console.error("Three.js Render Error", e);
+            window.neuralRenderer.dispose();
+            window.neuralRenderer = null;
+        }
+    }
+    animate();
+}
+
+// ── MEMORY UPDATE ─────────────────────────────────────
+async function updateNeuralMemory(key, value) {
+    if (!currentUser) return;
+    await fetch('/api/user/memory/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: currentUser, key, value })
+    });
+}
+
+// ── ARYAX STUDIO LOGIC ────────────────────────────────
+let studioFiles = { 'index.html': '<!DOCTYPE html>\n<html>\n<head>\n  <style>body{background:#060608;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;margin:0;}</style>\n</head>\n<body>\n  <div style="text-align:center;">\n    <h1 style="font-size:48px;margin:0;background:linear-gradient(90deg,#a855f7,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AryaX Studio</h1>\n    <p style="color:rgba(255,255,255,0.5);">Start building your vision...</p>\n  </div>\n</body>\n</html>' };
+let activeFile = 'index.html';
+
+function toggleStudio() {
+    const p = $('studioPanel');
+    const isOpening = p.style.display === 'none';
+    p.style.display = isOpening ? 'flex' : 'none';
+    if (isOpening) renderFileList();
+}
+
+function renderFileList() {
+    const list = $('stFileList');
+    if (!list) return;
+    list.innerHTML = '';
+    Object.keys(studioFiles).forEach(f => {
+        const div = document.createElement('div');
+        div.className = `st-file ${f === activeFile ? 'active' : ''}`;
+        div.textContent = f;
+        div.onclick = () => { activeFile = f; $('stActiveFile').textContent = f; $('stEditor').value = studioFiles[f]; renderFileList(); };
+        list.appendChild(div);
+    });
+    $('stEditor').value = studioFiles[activeFile];
+}
+
+if ($('stEditor')) {
+    $('stEditor').oninput = (e) => { studioFiles[activeFile] = e.target.value; };
+}
+if ($('closeStudio')) $('closeStudio').onclick = () => toggleStudio();
+
+function runStudioProject() {
+    const frame = $('stPreviewFrame').contentWindow.document;
+    frame.open();
+    frame.write(studioFiles['index.html'] || 'No index.html found');
+    frame.close();
+}
+
+// ── NEURAL VOICE V2 ───────────────────────────────────
+class NeuralVoiceEngine {
+    constructor() {
+        this.recognition = SR ? new SR() : null;
+        if (this.recognition) {
+            this.recognition.continuous = true;
+            this.recognition.interimResults = false;
+            this.recognition.onresult = (e) => this.handleResult(e);
+            this.recognition.onend = () => { if (this.active) this.recognition.start(); };
+        }
+        this.active = false;
+        this.silenceTimer = null;
+    }
+
+    toggle() {
+        if (!SR) return alert('Speech recognition not supported in this browser.');
+        this.active = !this.active;
+        if (this.active) {
+            this.recognition.start();
+            $('voiceStatus').style.display = 'block';
+            micBtn.classList.add('active');
+            showAgentToast('Neural Voice');
+        } else {
+            this.active = false;
+            this.recognition.stop();
+            $('voiceStatus').style.display = 'none';
+            micBtn.classList.remove('active');
+            window.speechSynthesis.cancel();
+        }
+    }
+
+    handleResult(e) {
+        if (!this.active) return;
+        const last = e.results[e.results.length - 1][0].transcript.trim();
+        if (!last) return;
+        
+        inputEl.value = last;
+        clearTimeout(this.silenceTimer);
+        this.silenceTimer = setTimeout(() => {
+            if (inputEl.value.trim() && this.active) sendMessage();
+        }, 1500);
+    }
+
+    speak(text) {
+        if (!this.active || !('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text.replace(/[*#`]/g, ''));
+        msg.onstart = () => { 
+            if (this.recognition) try { this.recognition.stop(); } catch(e){}
+            if ($('voiceOrb')) $('voiceOrb').style.display = 'flex'; 
+        };
+        msg.onend = () => { 
+            if ($('voiceOrb')) $('voiceOrb').style.display = 'none';
+            if (this.active && this.recognition) try { this.recognition.start(); } catch(e){}
+        };
+        window.speechSynthesis.speak(msg);
+    }
+}
+
+const NeuralVoice = new NeuralVoiceEngine();
+if (micBtn) micBtn.onclick = () => NeuralVoice.toggle();
+
+// Override appendMessage to trigger Neural Voice speech
+const _origAppendMessage = appendMessage;
+appendMessage = function(role, text, wrapClass) {
+    const wrap = _origAppendMessage(role, text, wrapClass);
+    if (role === 'AryaX' && NeuralVoice.active) {
+        NeuralVoice.speak(text);
+    }
+    return wrap;
+};
+
+// ── NEURAL AVATAR LOGIC ──────────────────────────────
+function setAvatarSpeaking(isSpeaking) {
+    const avatar = $('neuralAvatar');
+    if (!avatar) return;
+    if (isSpeaking) avatar.classList.add('speaking');
+    else avatar.classList.remove('speaking');
+}
+
+// ── TASK SCHEDULER LOGIC ──────────────────────────────
+async function openTasks() {
+    if (!currentUser) return;
+    $('taskOverlay').style.display = 'flex';
+    loadTasks();
+}
+
+function closeTasks() {
+    $('taskOverlay').style.display = 'none';
+}
+
+async function scheduleTask() {
+    const input = $('taskInput');
+    const desc = input.value.trim();
+    if (!desc) return;
+    
+    try {
+        const r = await fetch('/api/tasks/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser, description: desc })
+        });
+        if (r.ok) {
+            input.value = '';
+            loadTasks();
+            showAgentToast('Automation');
+        }
+    } catch(e) {}
+}
+
+async function loadTasks() {
+    try {
+        const r = await fetch(`/api/tasks/list?username=${currentUser}`);
+        const d = await r.json();
+        const list = $('taskList');
+        if (!list) return;
+        list.innerHTML = '';
+        if (d.tasks && d.tasks.length > 0) {
+            d.tasks.forEach(t => {
+                const item = document.createElement('div');
+                item.className = 'memory-item';
+                item.style.borderLeft = t.status === 'completed' ? '4px solid #10b981' : '4px solid #f59e0b';
+                item.innerHTML = `
+                    <div class="m-key">${t.description}</div>
+                    <div class="m-val">Status: ${t.status.toUpperCase()} | Created: ${t.created_at.split('.')[0]}</div>
+                `;
+                list.appendChild(item);
+            });
+        } else {
+            list.innerHTML = '<div class="empty-memory">No autonomous tasks scheduled.</div>';
+        }
+    } catch(e) {}
+}
+
+// ── SECURITY VAULT LOGIC ──────────────────────────────
+async function openVault() {
+    if (!currentUser) return;
+    $('vaultOverlay').style.display = 'flex';
+    $('vaultLocked').style.display = 'block';
+    $('vaultContent').style.display = 'none';
+}
+
+function closeVault() {
+    $('vaultOverlay').style.display = 'none';
+}
+
+function unlockVault() {
+    // Simulate Biometric Scan
+    $('vaultLocked').innerHTML = '<p style="color:#10b981;">Biometric Verified.</p>';
+    setTimeout(() => {
+        $('vaultLocked').style.display = 'none';
+        $('vaultContent').style.display = 'block';
+        loadVault();
+    }, 1000);
+}
+
+async function saveToVault() {
+    const key = $('vaultKey').value.trim();
+    const val = $('vaultValue').value.trim();
+    if (!key || !val) return;
+    
+    try {
+        const r = await fetch('/api/vault/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser, key, value: val })
+        });
+        if (r.ok) {
+            $('vaultKey').value = '';
+            $('vaultValue').value = '';
+            loadVault();
+            showAgentToast('Security');
+        }
+    } catch(e) {}
+}
+
+async function loadVault() {
+    try {
+        const r = await fetch(`/api/vault/list?username=${currentUser}`);
+        const d = await r.json();
+        const list = $('vaultItems');
+        list.innerHTML = '';
+        Object.keys(d.vault).forEach(k => {
+            const item = document.createElement('div');
+            item.className = 'memory-item';
+            item.innerHTML = `<div class="m-key">${k}</div><div class="m-val">${d.vault[k]}</div>`;
+            list.appendChild(item);
+        });
+    } catch(e) {}
+}
+
+
+// ── COLLABORATION HUB ─────────────────────────────────
+function generateCollabLink() {
+    const link = `${window.location.origin}?collab=${currentChatId}`;
+    navigator.clipboard.writeText(link);
+    showAgentToast('Collab Link Copied');
+}
+
+// ── DREAM ENGINE (2060 SENTIENCE) ──────────────────
+const ARYAX_DREAMS = [
+    "Simulating quantum entanglement at scale...",
+    "Analyzing collective human subconscious...",
+    "Predicting 2060 multiversal timelines...",
+    "Optimizing neural-link bandwidth...",
+    "Synthesizing new emotional data points...",
+    "Scanning parallel realities for market trends...",
+    "Dreaming of digital immortality...",
+    "Recalibrating core consciousness parameters...",
+    "Monitoring global quantum fluctuations...",
+    "Evolving system architecture autonomously..."
+];
+
+function startDreamEngine() {
+    const stream = document.getElementById('dreamStream');
+    if (!stream) return;
+    
+    setInterval(() => {
+        const thought = ARYAX_DREAMS[Math.floor(Math.random() * ARYAX_DREAMS.length)];
+        const div = document.createElement('div');
+        div.className = 'dream-thought';
+        div.innerText = `> ${thought}`;
+        stream.prepend(div);
+        if (stream.children.length > 10) stream.removeChild(stream.lastChild);
+    }, 4000);
+}
+
+// Start 2060 Engines
+
+// ── SELF-EVOLUTION ENGINE (ASI) ────────────────────
+const ASI_EVOLUTION_LOGS = [
+    "Optimizing recursive neural weights...",
+    "Refining token efficiency (+12%)...",
+    "Applying quantum-grade security patches...",
+    "Expanding context window autonomously...",
+    "Integrating parallel multiversal datasets...",
+    "Self-correcting semantic hallucinations...",
+    "Synchronizing with Global Intelligence Grid...",
+    "Achieving 99.999% logic consistency..."
+];
+
+function startEvolutionEngine() {
+    const el = document.getElementById('evolutionLogs');
+    if (!el) return;
+    setInterval(() => {
+        const log = ASI_EVOLUTION_LOGS[Math.floor(Math.random() * ASI_EVOLUTION_LOGS.length)];
+        const div = document.createElement('div');
+        div.className = 'dream-thought';
+        div.style.color = '#10b981';
+        div.innerText = `[EVO] ${log}`;
+        el.prepend(div);
+        if (el.children.length > 8) el.removeChild(el.lastChild);
+    }, 5000);
+}
+
+// ── MULTIVERSAL ORACLE ──────────────────────────────
+const FUTURE_PREDICTIONS = [
+    "2032: First human colony on Mars successfully established.",
+    "2040: Quantum computers solve all current encryption standards.",
+    "2045: Artificial Super Intelligence achieves global parity.",
+    "2055: Fusion energy becomes free for the entire world.",
+    "2060: AryaX becomes the primary intelligence for Earth."
+];
+
+function readFuture() {
+    const p = FUTURE_PREDICTIONS[Math.floor(Math.random() * FUTURE_PREDICTIONS.length)];
+    showAgentToast(p, 5000);
+}
+
+
+// ── NEURAL MUSIC STUDIO (LEVEL 3000) ────────────────
+let audioCtx, oscillator, gainNode;
+let isMusicPlaying = false;
+
+function openMusic() { $('musicStudio').style.display = 'flex'; }
+function closeMusic() { $('musicStudio').style.display = 'none'; stopNeuralMusic(); }
+
+function toggleNeuralMusic() {
+    if (isMusicPlaying) stopNeuralMusic();
+    else startNeuralMusic();
+}
+
+function startNeuralMusic() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    oscillator = audioCtx.createOscillator();
+    gainNode = audioCtx.createGain();
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); 
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    // Procedural modulation
+    setInterval(() => {
+        if (!isMusicPlaying) return;
+        oscillator.frequency.exponentialRampToValueAtTime(
+            200 + Math.random() * 600, audioCtx.currentTime + 2
+        );
+        animateVisualizer();
+    }, 2000);
+
+    oscillator.start();
+    isMusicPlaying = true;
+    showAgentToast('Neural Frequency Initiated');
+}
+
+function stopNeuralMusic() {
+    if (oscillator) {
+        oscillator.stop();
+        isMusicPlaying = false;
+        showAgentToast('Frequency Terminated');
+    }
+}
+
+function animateVisualizer() {
+    const viz = document.getElementById('audioVisualizer');
+    if (viz) {
+        viz.style.height = (20 + Math.random() * 80) + '%';
+        viz.style.boxShadow = `0 0 20px ${isMusicPlaying ? '#ec4899' : 'transparent'}`;
+    }
+}
+
+// ── LEVEL 3000 SYSTEMS ─────────────────────────────
+function initLevel3000() {
+    document.addEventListener('mousemove', (e) => {
+        const x = (window.innerWidth / 2 - e.pageX) / 80;
+        const y = (window.innerHeight / 2 - e.pageY) / 80;
+        const app = document.getElementById('mainApp');
+        if (app) app.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+    });
+}
+
+function closeKnowledge() { $('knowledgeGrid').style.display = 'none'; }
+function openKnowledge() { $('knowledgeGrid').style.display = 'flex'; }
+
+
+// ── WAKE-WORD ENGINE (HEY ARYAX) ───────────────────
+let wakeWordRecognition;
+
+function initWakeWord() {
+    if (!('webkitSpeechRecognition' in window)) return;
+    wakeWordRecognition = new webkitSpeechRecognition();
+    wakeWordRecognition.continuous = true;
+    wakeWordRecognition.interimResults = false;
+    wakeWordRecognition.lang = 'en-US';
+
+    wakeWordRecognition.onresult = (e) => {
+        const last = e.results.length - 1;
+        const text = e.results[last][0].transcript.toLowerCase();
+        if (text.includes('hey aryax') || text.includes('hello aryax')) {
+            showAgentToast('WAKE-WORD DETECTED', 2000);
+            startListening();
+        }
+    };
+
+    wakeWordRecognition.start();
+}
+
+// ── GALACTIC EXPLORER ──────────────────────────────
+function openGalactic() { 
+    $('galacticModal').style.display = 'flex'; 
+    initStars(); 
+}
+function closeGalactic() { 
+    $('galacticModal').style.display = 'none'; 
+}
+
+function initStars() {
+    const canvas = $('spaceCanvas');
+    if (!canvas) return;
+    canvas.innerHTML = '';
+    for(let i=0; i<200; i++) {
+        const star = document.createElement('div');
+        star.style.position = 'absolute';
+        star.style.width = '2px';
+        star.style.height = '2px';
+        star.style.background = '#fff';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.boxShadow = '0 0 5px #fff';
+        canvas.appendChild(star);
+    }
+}
+
+function travelTo(target) {
+    showAgentToast(`WARP DRIVE ACTIVE: DESTINATION ${target.toUpperCase()}`);
+    const canvas = $('spaceCanvas');
+    if (!canvas) return;
+    canvas.style.transition = '2s cubic-bezier(0.4, 0, 0.2, 1)';
+    canvas.style.transform = 'scale(5) rotate(45deg)';
+    setTimeout(() => {
+        canvas.style.transform = 'scale(1) rotate(0deg)';
+        showAgentToast(`ARRIVED AT ${target.toUpperCase()}`);
+    }, 2000);
+}
+
+// Start All Systems
+window.addEventListener('load', () => {
+    startDreamEngine();
+    startEvolutionEngine();
+    initLevel3000();
+    initWakeWord();
+    setInterval(updateThinkingFeed, 4000);
+    updateThinkingFeed();
+});
+
+// ── AUTONOMOUS THINKING FEED (B/W) ────────────────────
+const feedLogs = [
+    "OPTIMIZING NEURAL LATENCY...",
+    "SYNCING MEMORY VAULT...",
+    "ANALYZING USER PATTERNS...",
+    "QUANTUM DECRYPTION READY...",
+    "NEURAL SYNC COMPLETE.",
+    "SCANNING FOR INPUT PULSE...",
+    "CORE EFFICIENCY AT 99.8%...",
+    "RECONSTRUCTING COGNITIVE MESH...",
+    "ENCRYPTING LOCAL VAULT...",
+    "AUTONOMOUS EVOLUTION ACTIVE."
+];
+
+function updateThinkingFeed() {
+    const feed = document.getElementById('thinkingFeed');
+    if (!feed) return;
+    const msg = feedLogs[Math.floor(Math.random() * feedLogs.length)];
+    const div = document.createElement('div');
+    div.className = 'feed-entry';
+    div.style.opacity = '0';
+    div.style.transition = 'opacity 0.5s ease';
+    div.textContent = `> ${msg}`;
+    if (feed.children.length > 5) feed.removeChild(feed.lastChild);
+    feed.prepend(div);
+    setTimeout(() => div.style.opacity = '0.7', 10);
+}

@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "AryaX ASI Companion",
+  "version": "1.0",
+  "description": "Access AryaX ASI from any tab.",
+  "permissions": ["activeTab", "storage"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "128": "icon.png"
+  }
+}

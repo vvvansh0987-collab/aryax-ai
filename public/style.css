@@ -325,6 +325,538 @@ body.light-theme .social-btn:hover{background:rgba(0,0,0,.06);}
 .recent-item:hover .pin-btn{opacity:1;}
 .recent-item{display:flex;align-items:center;}
 .recent-item .item-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* ═══════════════════════════════════════════════ */
+/*  NEURAL DASHBOARD & HUB                         */
+/* ═══════════════════════════════════════════════ */
+.dashboard-card {
+    background: rgba(10, 10, 12, 0.85);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 90%;
+    max-width: 1000px;
+    border-radius: 28px;
+    padding: 40px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    animation: modalScale .4s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
+.db-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
 
+.db-title-group h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    margin: 8px 0 0;
+    letter-spacing: -0.5px;
+}
 
+.db-badge {
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.db-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    position: relative;
+    z-index: 2;
+}
+
+.db-stats-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 20px;
+    transition: 0.3s ease;
+}
+
+.stat-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+}
+
+.stat-card .label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.stat-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.db-memory-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+}
+
+.panel-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: #a855f7;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+
+.memory-list {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 10px;
+}
+
+.memory-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 14px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    animation: fadeIn .3s ease;
+}
+
+.memory-item .m-key {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.memory-item .m-val {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.empty-memory {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+}
+
+.db-visuals {
+    margin-top: 30px;
+    position: relative;
+    height: 180px;
+    background: radial-gradient(circle at center, rgba(168, 85, 247, 0.1), transparent 70%);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.neural-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.db-footer-text {
+    position: relative;
+    z-index: 2;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    text-align: center;
+    max-width: 300px;
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  RESPONSIVE DASHBOARD                          */
+/* ═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .dashboard-card { padding: 24px; }
+    .db-grid { grid-template-columns: 1fr; }
+    .db-header h2 { font-size: 24px; }
+}
+
+@keyframes modalScale {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  ARYAX STUDIO (WORKSPACE)                       */
+/* ═══════════════════════════════════════════════ */
+.studio-panel {
+    position: fixed;
+    inset: 0;
+    background: #060608;
+    z-index: 50000;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp .4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.studio-header {
+    height: 60px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.02);
+}
+
+.st-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.st-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.st-pill {
+    background: #a855f7;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.st-pill:hover {
+    background: #9333ea;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+.studio-main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 240px 1fr 1fr;
+    overflow: hidden;
+}
+
+.st-sidebar {
+    border-right: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.01);
+    padding: 20px;
+}
+
+.st-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 16px;
+}
+
+.st-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.st-file {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: 0.2s;
+    background: rgba(255,255,255,0.02);
+}
+
+.st-file.active {
+    background: rgba(168, 85, 247, 0.15);
+    color: #fff;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.st-editor-wrap {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.st-file-tab {
+    padding: 12px 24px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 2px solid #a855f7;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    width: fit-content;
+}
+
+#stEditor {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 14px;
+    padding: 30px;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+}
+
+.st-preview-wrap {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+#stPreviewFrame {
+    flex: 1;
+    border: none;
+    background: #fff;
+}
+
+.studio-btn {
+    width: 100%;
+    margin-top: 12px;
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    color: #fff;
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 10px 20px rgba(168, 85, 247, 0.2);
+}
+
+.studio-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(168, 85, 247, 0.4);
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  NEURAL VOICE PILL                              */
+/* ═══════════════════════════════════════════════ */
+.voice-status-pill {
+    background: rgba(168, 85, 247, 0.2);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    color: #a855f7;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: pulse 2s infinite;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  NEURAL AVATAR (AI FACE)                        */
+/* ═══════════════════════════════════════════════ */
+.neural-avatar-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.15;
+    transition: 0.5s ease;
+}
+
+.neural-avatar-container.speaking {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Mood States */
+.neural-avatar-container.happy .avatar-ring { border-color: rgba(16, 185, 129, 0.4); }
+.neural-avatar-container.happy .neural-pulse { stroke: #10b981; }
+.neural-avatar-container.happy .avatar-status { color: #10b981; }
+
+.neural-avatar-container.serious .avatar-ring { border-color: rgba(59, 130, 246, 0.4); }
+.neural-avatar-container.serious .neural-pulse { stroke: #3b82f6; }
+.neural-avatar-container.serious .avatar-status { color: #3b82f6; }
+
+.neural-avatar-container.calm .avatar-ring { border-color: rgba(168, 85, 247, 0.4); }
+.neural-avatar-container.calm .neural-pulse { stroke: #a855f7; }
+.neural-avatar-container.calm .avatar-status { color: #a855f7; }
+
+.avatar-core {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    z-index: 10;
+}
+
+.avatar-ring {
+    position: absolute;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 50%;
+    animation: rotateAvatar 10s linear infinite;
+}
+
+.ring-1 { width: 180px; height: 180px; border-style: dashed; animation-duration: 15s; }
+.ring-2 { width: 220px; height: 220px; border-color: rgba(99, 102, 241, 0.2); animation-direction: reverse; animation-duration: 20s; }
+.ring-3 { width: 150px; height: 150px; opacity: 0.5; }
+
+.neural-pulse {
+    stroke-dasharray: 100;
+    animation: pulsePath 3s ease-in-out infinite;
+}
+
+.avatar-status {
+    position: absolute;
+    bottom: -40px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #a855f7;
+    opacity: 0.5;
+}
+
+@keyframes rotateAvatar {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  2060 LEVEL UI (SENTIENCE)                      */
+/* ═══════════════════════════════════════════════ */
+.consciousness-panel {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 250px;
+    background: rgba(10, 10, 15, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    z-index: 5000;
+    pointer-events: none;
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.1);
+}
+
+.cp-label {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: rgba(168, 85, 247, 0.8);
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+    padding-bottom: 5px;
+}
+
+.cp-stream {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    height: 300px;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+}
+
+.dream-thought {
+    margin-bottom: 8px;
+    animation: slideUpFade 4s linear infinite;
+}
+
+@keyframes slideUpFade {
+    0% { transform: translateY(20px); opacity: 0; }
+    20% { transform: translateY(0); opacity: 1; }
+    80% { transform: translateY(-20px); opacity: 1; }
+    100% { transform: translateY(-40px); opacity: 0; }
+}
+
+.quantum-fx {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(rgba(18, 16, 16, 0) 0%, rgba(168, 85, 247, 0.03) 50%, rgba(18, 16, 16, 0) 100%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: overlay;
+    animation: scanline 10s linear infinite;
+}
+
+@keyframes scanline {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+}
+
+/* 🧠 NEURAL LOGO PULSE (B/W) */
+.thinking-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+}
+.thinking-logo {
+    width: 24px;
+    height: 24px;
+    background: url('logo.png') no-repeat center center;
+    background-size: contain;
+    filter: grayscale(1) brightness(2);
+    animation: logoPulse 2s infinite ease-in-out;
+}
+@keyframes logoPulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.9); filter: grayscale(1) brightness(1); }
+    50% { opacity: 1; transform: scale(1.1); filter: grayscale(1) brightness(3); }
+}
+.terminal-cursor {
+    width: 8px;
+    height: 15px;
+    background: #fff;
+    animation: blinkCursor 1s infinite;
+    display: inline-block;
+    vertical-align: middle;
+}
+@keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }

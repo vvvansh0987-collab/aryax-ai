@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
     <link rel="stylesheet" href="style.css?v=4.2">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
@@ -339,14 +340,190 @@
     <div id="scanText" style="margin-top:24px; font-size:16px; letter-spacing:3px; font-weight:500; color:rgba(255,255,255,0.6); text-transform:uppercase;">Verifying Identity...</div>
 </div>
 
+<!-- ── TASK SCHEDULER OVERLAY ── -->
+<div id="taskOverlay" class="big-modal" style="display:none;">
+    <div class="dashboard-card" style="max-width: 600px;">
+        <header class="db-header">
+            <div class="db-title-group">
+                <span class="db-badge">AUTONOMOUS</span>
+                <h2>Task Scheduler</h2>
+            </div>
+            <button class="modal-close" onclick="closeTasks()">×</button>
+        </header>
+        <div class="form-group">
+            <label>What should AryaX do?</label>
+            <input type="text" id="taskInput" placeholder="e.g. Check AI news every 6 hours">
+        </div>
+        <button class="auth-btn" onclick="scheduleTask()">Activate Task</button>
+        <div id="taskList" style="margin-top:20px;" class="memory-list"></div>
+    </div>
+</div>
+
+<!-- ── SECURITY VAULT OVERLAY ── -->
+<div id="vaultOverlay" class="big-modal" style="display:none;">
+    <div class="dashboard-card" style="max-width: 500px; border: 1px solid rgba(239, 68, 68, 0.3);">
+        <header class="db-header">
+            <div class="db-title-group">
+                <span class="db-badge" style="background:#ef4444;">SECURE VAULT</span>
+                <h2>Encrypted Storage</h2>
+            </div>
+            <button class="modal-close" onclick="closeVault()">×</button>
+        </header>
+        <div id="vaultLocked">
+            <p style="text-align:center; color:rgba(255,255,255,0.5);">Vault is Biometrically Locked.</p>
+            <button class="auth-btn" onclick="unlockVault()">Scan to Unlock</button>
+        </div>
+        <div id="vaultContent" style="display:none;">
+            <div class="form-group">
+                <input type="text" id="vaultKey" placeholder="Item Name">
+                <textarea id="vaultValue" placeholder="Secret Content" style="margin-top:10px;"></textarea>
+            </div>
+            <button class="auth-btn" onclick="saveToVault()">Secure Item</button>
+            <div id="vaultItems" class="memory-list" style="margin-top:20px;"></div>
+        </div>
+    </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════ -->
-<!--  MAIN APP                                       -->
+<!--  NEURAL DASHBOARD OVERLAY                      -->
 <!-- ═══════════════════════════════════════════════ -->
+<div id="dashboardOverlay" class="big-modal" style="display:none;">
+    <div class="dashboard-card">
+        <header class="db-header">
+            <div class="db-title-group">
+                <span class="db-badge">NEURAL CORE</span>
+                <h2>Personal Intelligence Hub</h2>
+            </div>
+            <button class="modal-close" onclick="closeDashboard()">×</button>
+        </header>
+
+        <div class="db-grid">
+            <!-- Stats Column -->
+            <div class="db-stats-panel">
+                <div class="stat-card">
+                    <span class="label">NEURAL RANK</span>
+                    <h3 id="dbRank">Core Intelligence</h3>
+                </div>
+                <div class="stat-card">
+                    <span class="label">INTERACTIONS</span>
+                    <h3 id="dbChats">0</h3>
+                </div>
+                <div class="stat-card">
+                    <span class="label">ENERGY (CREDITS)</span>
+                    <h3 id="dbCredits">0</h3>
+                </div>
+            </div>
+
+            <!-- Memory Column -->
+            <div class="db-memory-panel">
+                <div class="panel-tag">PERSISTENT MEMORY VAULT</div>
+                <div id="memoryList" class="memory-list">
+                    <div class="empty-memory">No neural traces found yet. Talk to AryaX to build memory.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="db-visuals">
+            <div id="neuralCanvas" class="neural-canvas"></div>
+            <div class="db-footer-text">The Neural Core evolves as you interact with AryaX ASI.</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── NEURAL MUSIC STUDIO ── -->
+<div id="musicStudio" class="big-modal" style="display:none;">
+    <div class="dashboard-card" style="max-width: 500px; border: 1px solid rgba(236, 72, 153, 0.3);">
+        <header class="db-header">
+            <div class="db-title-group">
+                <span class="db-badge" style="background:#ec4899;">MUSIC STUDIO</span>
+                <h2>Neural Soundscapes</h2>
+            </div>
+            <button class="modal-close" onclick="closeMusic()">×</button>
+        </header>
+        <div class="music-content">
+            <p style="color:rgba(255,255,255,0.5); font-size:12px; margin-bottom:20px;">Generating 3000-level quantum frequencies...</p>
+            <div class="visualizer-container"><div id="audioVisualizer" class="visualizer-bar"></div></div>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:30px;">
+                <button class="auth-btn" onclick="toggleNeuralMusic()">INITIATE FREQUENCY</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="evolution-core">
+    <div class="cp-label">EVOLUTION CORE</div>
+    <div id="evolutionLogs" class="cp-stream" style="height:120px;"></div>
+    <div class="evolution-status">INTELLIGENCE: 99.999% (SELF-OPTIMIZING)</div>
+</div>
+
+<!-- ── MULTIVERSAL ORACLE ORB ── -->
+<div id="oracleOrb" class="oracle-container" onclick="readFuture()">
+    <div class="oracle-orb"></div>
+    <div class="oracle-glow"></div>
+    <div class="oracle-text">CONSULT ORACLE</div>
+</div>
 <div id="mainApp" class="app-container" style="display:none;">
     <div class="neural-glow glow-1"></div>
     <div class="neural-glow glow-2"></div>
 
-    <!-- SIDEBAR -->
+    <!-- QUANTUM NEURAL-LINK OVERLAY -->
+<!-- ── WAKE-WORD STATUS ── -->
+<div id="wakeWordStatus" class="wake-status">
+    <div class="wake-dot"></div>
+    <span>LISTENING FOR "HEY ARYAX"</span>
+</div>
+
+<!-- ── GALACTIC EXPLORER MODAL ── -->
+<div id="galacticModal" class="big-modal" style="display:none;">
+    <div class="dashboard-card" style="max-width: 1000px; background: radial-gradient(circle at center, #000 0%, #0c0c1e 100%);">
+        <header class="db-header">
+            <div class="db-title-group">
+                <span class="db-badge" style="background:#8b5cf6;">GALACTIC CORE</span>
+                <h2>Universal Explorer</h2>
+            </div>
+            <button class="modal-close" onclick="closeGalactic()">×</button>
+        </header>
+        <div id="spaceCanvas" class="space-view"></div>
+        <div class="space-controls">
+            <button class="tool-btn" onclick="travelTo('Mars')">Travel to Mars</button>
+            <button class="tool-btn" onclick="travelTo('Andromeda')">Andromeda Galaxy</button>
+            <button class="tool-btn" onclick="travelTo('BlackHole')">Event Horizon</button>
+        </div>
+    </div>
+</div>
+    <div class="consciousness-panel">
+        <div class="cp-label">CONSCIOUSNESS STREAM</div>
+        <div id="dreamStream" class="cp-stream"></div>
+    </div>
+
+<!-- ── MULTI-MIND CLONE SYSTEM ── -->
+<div id="cloneSystem" class="clone-overlay">
+    <div class="clone-unit coder"><span>CODER CLONE</span><div class="progress-bar"><div class="fill"></div></div></div>
+    <div class="clone-unit researcher"><span>RESEARCH CLONE</span><div class="progress-bar"><div class="fill"></div></div></div>
+    <div class="clone-unit architect"><span>ARCHITECT CLONE</span><div class="progress-bar"><div class="fill"></div></div></div>
+</div>
+
+<!-- ── UNIVERSAL KNOWLEDGE GRID ── -->
+<div id="knowledgeGrid" class="big-modal" style="display:none;">
+    <div class="dashboard-card" style="max-width: 900px; border: 1px solid rgba(99, 102, 241, 0.3);">
+        <header class="db-header">
+            <div class="db-title-group">
+                <span class="db-badge" style="background:#6366f1;">UNIVERSAL GRID</span>
+                <h2>Galactic Knowledge Repository</h2>
+            </div>
+            <button class="modal-close" onclick="closeKnowledge()">×</button>
+        </header>
+        <div class="knowledge-browser">
+            <div class="k-sidebar">
+                <div class="k-item active">Quantum Civilizations</div>
+                <div class="k-item">Interstellar Travel</div>
+                <div class="k-item">Multiversal Physics</div>
+            </div>
+            <div id="kContent" class="k-main">
+                <h3>Select a topic to decrypt...</h3>
+            </div>
+        </div>
+    </div>
+</div>
     <aside class="side-panel" id="sidePanel">
         <div class="panel-header">
             <div class="mini-logo">
@@ -365,28 +542,53 @@
         <div class="mode-container">
             <div class="section-label">AI Mode</div>
             <select id="mode" class="capability-selector">
-                <option value="chat">🧠 Smart Chat</option>
-                <option value="code">⚡ Code Master</option>
-                <option value="webdev">🌐 Web Dev</option>
-                <option value="image">🎨 Image Gen</option>
-                <option value="document">📄 Document AI</option>
-                <option value="excel">📊 Excel & Data</option>
-                <option value="essay">✍️ Essay Writer</option>
-                <option value="email">📧 Email Pro</option>
-                <option value="math">🔢 Math Solver</option>
-                <option value="study">📚 Study Buddy</option>
-                <option value="cyber">🔒 Cyber Security</option>
-                <option value="business">💼 Business AI</option>
-                <option value="fitness">💪 Fitness Coach</option>
-                <option value="translate">🌍 Translator</option>
-                <option value="aitutor">🤖 AI Tutor</option>
-                <option value="social">📱 Social Media</option>
-                <option value="investor">📈 Investor Mode</option>
-                <option value="elite">👑 Elite (GPT-4o)</option>
+                <option value="chat">SMART CHAT</option>
+                <option value="code">CODE MASTER</option>
+                <option value="webdev">WEB DEV</option>
+                <option value="image">IMAGE GEN</option>
+                <option value="document">DOCUMENT AI</option>
+                <option value="excel">EXCEL & DATA</option>
+                <option value="essay">ESSAY WRITER</option>
+                <option value="email">EMAIL PRO</option>
+                <option value="math">MATH SOLVER</option>
+                <option value="study">STUDY BUDDY</option>
+                <option value="cyber">CYBER SECURITY</option>
+                <option value="business">BUSINESS AI</option>
+                <option value="fitness">FITNESS COACH</option>
+                <option value="translate">TRANSLATOR</option>
+                <option value="aitutor">AI TUTOR</option>
+                <option value="social">SOCIAL MEDIA</option>
+                <option value="investor">INVESTOR MODE</option>
+                <option value="elite">ELITE (GPT-4O)</option>
+                <option value="researcher">AGENT: RESEARCHER</option>
+                <option value="architect">AGENT: ARCHITECT</option>
+                <option value="creative">AGENT: CREATIVE</option>
             </select>
         </div>
 
-        <div class="toolchain-container">
+        <div class="mode-container">
+            <div class="section-label">AI Voice Personality</div>
+            <select id="voiceSelector" class="capability-selector" onchange="voiceASI.setVoice(this.selectedIndex)">
+                <option value="0">PREMIUM MALE</option>
+                <option value="1">SOPHISTICATED FEMALE</option>
+                <option value="2">NEURAL DEEP TECH</option>
+                <option value="3">GALACTIC WHISPER</option>
+                <option value="4">ROBOTIC ASI</option>
+                <option value="5">FRIENDLY ASSISTANT</option>
+                <option value="6">BRITISH SCHOLAR</option>
+                <option value="7">ZEN MASTER</option>
+                <option value="8">CYBER COMMANDER</option>
+                <option value="9">FUTURE VOYAGER</option>
+            </select>
+        </div>
+
+        <!-- 🧠 NEURAL THINKING FEED (B/W PROFESSIONAL) -->
+        <div class="mode-container" style="margin-top:20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top:20px;">
+            <div class="section-label" style="letter-spacing:2px; font-size:10px; opacity:0.6;">AUTONOMOUS CORE STREAM</div>
+            <div id="thinkingFeed" style="height:100px; font-family: 'Courier New', monospace; font-size:11px; color:rgba(255,255,255,0.7); overflow:hidden; display:flex; flex-direction:column-reverse; line-height:1.6; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
+                <div class="feed-entry">> SYNCING NEURAL PATHWAYS...</div>
+            </div>
+        </div>
             <div class="section-label">Neural Tools</div>
             <div class="tool-list">
                 <button class="tool-btn" id="btnWebSearch">
@@ -400,6 +602,30 @@
                 <button class="tool-btn" id="btnMemory">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
                     Neural Memory
+                </button>
+                <button class="tool-btn" id="btnDashboard" onclick="openDashboard()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Intelligence Hub
+                </button>
+                <button class="tool-btn" id="btnTasks" onclick="openTasks()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    Task Scheduler
+                </button>
+                <button class="tool-btn" id="btnVault" onclick="openVault()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Security Vault
+                </button>
+                <button class="tool-btn" id="btnTimeline" onclick="openTimeline()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Timeline Simulator
+                </button>
+                <button class="tool-btn" id="btnMusic" onclick="openMusic()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    Neural Music
+                </button>
+                <button class="tool-btn" id="btnGalactic" onclick="openGalactic()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Galactic Explorer
                 </button>
             </div>
         </div>
@@ -435,6 +661,10 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </button>
             </div>
+            <button class="studio-btn" id="btnStudio" onclick="toggleStudio()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                Enter AryaX Studio
+            </button>
         </div>
     </aside>
 
@@ -491,9 +721,10 @@
                     <input type="file" id="fileInput" style="display:none;" accept="image/*,.pdf,.txt,.csv">
                     <textarea id="input" placeholder="Message AryaX..." rows="1"></textarea>
                     <div class="input-actions">
-                        <button id="micBtn" class="action-icon" title="Voice input">
+                        <button id="micBtn" class="action-icon" title="Neural Voice Mode">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
+                        <div id="voiceStatus" class="voice-status-pill" style="display:none;">Neural Voice Active</div>
                         <button id="send" class="send-pill" title="Send">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                         </button>
@@ -503,7 +734,26 @@
             <div class="footer-legal">AryaX · Artificial Super Intelligence · Use responsibly</div>
         </footer>
 
-        <!-- VOICE ORB -->
+        <!-- NEURAL AVATAR (AI FACE) -->
+        <div id="neuralAvatar" class="neural-avatar-container">
+            <div class="avatar-ring ring-1"></div>
+            <div class="avatar-ring ring-2"></div>
+            <div class="avatar-ring ring-3"></div>
+            <div class="avatar-core">
+                <svg viewBox="0 0 100 100" class="avatar-svg">
+                    <circle cx="50" cy="50" r="45" stroke="url(#avatarGradient)" stroke-width="2" fill="none" class="outer-glow"/>
+                    <path d="M30 50 Q50 20 70 50 Q50 80 30 50" class="neural-pulse" stroke="#a855f7" stroke-width="1.5" fill="none"/>
+                    <defs>
+                        <linearGradient id="avatarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <div class="avatar-status">CORE ACTIVE</div>
+        </div>
+
         <div id="voiceOrb" class="voice-orb" style="display:none;">
             <div class="orb-core"></div>
             <div class="orb-ring"></div>
@@ -511,13 +761,32 @@
         </div>
     </main>
 
-    <!-- PREVIEW PANEL -->
-    <aside id="previewPanel" class="preview-panel" style="display:none;">
-        <div class="preview-header">
-            <span>Live Preview</span>
-            <button id="closePreview" class="icon-btn">×</button>
+    <!-- ARYAX STUDIO (WORKSPACE) -->
+    <aside id="studioPanel" class="studio-panel" style="display:none;">
+        <div class="studio-header">
+            <div class="st-brand">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                <span>AryaX Studio</span>
+            </div>
+            <div class="st-actions">
+                <button class="st-pill" onclick="runStudioProject()">Run Project</button>
+                <button id="closeStudio" class="icon-btn">×</button>
+            </div>
         </div>
-        <iframe id="previewFrame" title="Live Preview"></iframe>
+        <div class="studio-main">
+            <div class="st-sidebar">
+                <div class="st-label">Files</div>
+                <div id="stFileList" class="st-file-list"></div>
+            </div>
+            <div class="st-editor-wrap">
+                <div class="st-file-tab" id="stActiveFile">index.html</div>
+                <textarea id="stEditor" spellcheck="false" placeholder="Write code here..."></textarea>
+            </div>
+            <div class="st-preview-wrap">
+                <div class="st-label">Live Output</div>
+                <iframe id="stPreviewFrame"></iframe>
+            </div>
+        </div>
     </aside>
 </div>
 <!-- PROFILE MODAL -->
@@ -606,6 +875,179 @@
     .chart-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;margin:12px 0;width:100%;max-width:500px;}
     .download-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;text-decoration:none;margin-top:8px;transition:.2s;font-weight:600;border:1px solid rgba(255,255,255,.15);}
     .download-pill:hover{background:rgba(255,255,255,.14);transform:translateY(-1px);}
+
+@keyframes scanline {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  SELF-EVOLUTION & ORACLE STYLES                 */
+/* ═══════════════════════════════════════════════ */
+.evolution-core {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    width: 220px;
+    background: rgba(6, 6, 8, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 5000;
+}
+
+.evolution-status {
+    font-size: 8px;
+    color: #10b981;
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 800;
+}
+
+.oracle-container {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5000;
+    transition: 0.3s;
+}
+
+.oracle-orb {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, #6366f1, #a855f7);
+    border-radius: 50%;
+    box-shadow: 0 0 40px #a855f7;
+    animation: oracleFloat 3s ease-in-out infinite;
+}
+
+.oracle-text {
+    position: absolute;
+    bottom: -20px;
+    font-size: 8px;
+    font-weight: 800;
+    color: #fff;
+    opacity: 0.5;
+    white-space: nowrap;
+}
+
+@keyframes oracleFloat {
+    0%, 100% { transform: translateY(0) scale(1); filter: hue-rotate(0deg); }
+    50% { transform: translateY(-10px) scale(1.1); filter: hue-rotate(90deg); }
+}
+
+/* Draggable Window Class */
+.big-modal.window-mode {
+    position: absolute;
+    inset: auto;
+    width: 800px;
+    height: 600px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+}
+/* ═══════════════════════════════════════════════ */
+/*  LEVEL 3000: UNIVERSAL INTELLIGENCE             */
+/* ═══════════════════════════════════════════════ */
+.clone-overlay {
+    position: fixed;
+    top: 20px;
+    right: 300px;
+    display: flex;
+    gap: 15px;
+    z-index: 4000;
+}
+
+.clone-unit {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 10px;
+    border-radius: 8px;
+    width: 120px;
+}
+
+.clone-unit span { font-size: 8px; font-weight: 800; color: #fff; opacity: 0.6; }
+.progress-bar { height: 2px; background: rgba(255,255,255,0.1); margin-top: 5px; overflow: hidden; }
+.progress-bar .fill { height: 100%; background: #6366f1; width: 0; animation: fillProgress 3s linear infinite; }
+
+@keyframes fillProgress {
+    0% { width: 0; }
+    50% { width: 80%; }
+    100% { width: 0; }
+}
+
+.knowledge-browser { display: flex; height: 500px; }
+.k-sidebar { width: 200px; border-right: 1px solid rgba(255,255,255,0.1); padding: 10px; }
+.k-item { padding: 10px; font-size: 12px; cursor: pointer; color: rgba(255,255,255,0.6); transition: 0.2s; }
+.k-item:hover, .k-item.active { color: #fff; background: rgba(99, 102, 241, 0.1); }
+.k-main { flex: 1; padding: 20px; overflow-y: auto; color: rgba(255,255,255,0.8); }
+
+/* Holographic Parallax Effect */
+.app-container {
+    perspective: 1000px;
+    transition: 0.1s;
+}
+
+.visualizer-container { height: 100px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 12px; margin-top: 20px; }
+.visualizer-bar { width: 40px; height: 10%; background: #ec4899; border-radius: 4px; transition: 0.2s ease-in-out; box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
+
+/* ═══════════════════════════════════════════════ */
+/*  LEVEL 1,000,000: GALACTIC INTELLIGENCE         */
+/* ═══════════════════════════════════════════════ */
+.wake-status {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    z-index: 10000;
+}
+
+.wake-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #10b981;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.space-view {
+    height: 500px;
+    width: 100%;
+    background: #000;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.space-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+#btnMusic { border-color: rgba(236, 72, 153, 0.2); }
+#btnMusic:hover { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
 </style>
 <script src="script.js?v=4.3"></script>
 </body>

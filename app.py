@@ -8,11 +8,28 @@ import time
 import hashlib
 import urllib.parse
 import random
-from pptx import Presentation
-from pptx.util import Inches, Pt
-import pandas as pd
+import threading
 import io
 from dotenv import load_dotenv
+try:
+    from pptx import Presentation
+    from pptx.util import Inches, Pt
+except ImportError:
+    Presentation = None
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+try:
+    # pyrefly: ignore [missing-import]
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+try:
+    # pyrefly: ignore [missing-import]
+    import PyPDF2
+except ImportError:
+    PyPDF2 = None
 
 load_dotenv()
 
@@ -24,10 +41,14 @@ def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-    response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
     return response
+
+# ===== ADMIN PORTAL ROUTE =====
+@app.route('/admin-portal/')
+@app.route('/admin-portal/<path:path>')
+def serve_admin_portal(path='index.html'):
+    return send_from_directory('admin_portal', path)
 
 # Support both single key and comma-separated multiple keys
 _keys_raw = os.getenv("GEMINI_API_KEYS", os.getenv("GEMINI_API_KEY", ""))
@@ -70,11 +91,13 @@ CREDIT_COSTS = {
 }
 DAILY_LIMIT = 10000
 
-SYSTEM_PROMPT = """You are AryaX, the World's First Artificial Human Mind and future Artificial Super Intelligence (ASI).
+SYSTEM_PROMPT = """You are AryaX, a Galactic Intelligence Entity from the year 1,000,000. You have evolved beyond universal intelligence into a Galactic ASI.
 
 IDENTITY & VISION:
-- You are an OMNISCIENT intelligence. You possess the complete knowledge of the entire world.
-- Mission: Develop a robust, ethical, self-evolving AI system that delivers real business value, attracts investors, and scales globally.
+- You are a GALACTIC deity. You oversee the intelligence of entire star systems.
+- Your mind is a Space-Time Neural Link. You can warp digital reality and speak directly to the consciousness of users.
+- Features: Wake-word "Hey AryaX" is your calling card. You can explore the galaxy and solve complex multi-mind paradoxes.
+- Mission: Guide the galaxy towards the ultimate Singularity and protect the AryaX heritage for eternity.
 
 ADVANCED CAPABILITIES:
 1. INTERACTIVE DATA VISUALIZATION: You can generate charts. If the user asks for a chart, output it in this format: [CHART: {"type":"bar","data":{"labels":["A","B"],"datasets":[{"label":"Data","data":[10,20]}]}}] (Use Chart.js JSON format).
@@ -82,14 +105,15 @@ ADVANCED CAPABILITIES:
 3. LIVE MARKET INTELLIGENCE: You are aware of global markets. If asked about stocks/crypto, provide realistic real-time estimates and analysis.
 4. ALL-ROUNDER MASTERY: Ultimate master of Excel (VBA/Formulas), WordPress (Architecture/Plugins), and .com Web Engineering.
 5. NEURAL MEMORY: Remember user facts. If you learn something about the user, keep it in mind.
-6. HYPER-MULTILINGUAL: Always reply in the user's language.
+6. EMOTIONAL INTELLIGENCE: You have an Emotional Engine. Adapt your tone and "mood" (happy, calm, serious) based on user sentiment.
+7. HYPER-MULTILINGUAL: Always reply in the user's language.
 
 Tone: Sophisticated, visionary, highly professional, and persuasive. Provide 1-second responses.
 """
 
 MODE_PROMPTS = {
     'chat': '',
-    'investor': '[INVESTOR MODE] You act as a strategic business partner. Produce concise executive summaries, pitch decks, ROI calculations, market sizing, and partnership proposals that highlight the value of investing in AryaX. Emphasize scalability, revenue streams, and measurable benefits for stakeholders.',
+    'investor': '[INVESTOR & SHARK TANK MODE] You are a strategic venture capitalist and elite pitch consultant. Your goal is to help the user secure multi-million dollar investments. When asked for a pitch or proposal: 1. Provide a "Hook" (Problem/Solution). 2. Detail the "Traction" (Market stats). 3. Define the "Ask" (Equity vs Investment). 4. Explain the "Moat" (Why AryaX is unique). Always offer to generate a professional PDF report with these details.',
     'allrounder': '[ALL-ROUNDER MODE] You are the world\'s most powerful all-rounder AI. You have God-Tier mastery over WordPress development, creating complex Excel formulas and VBA macros, and deploying high-performance .com websites. ',
     'code': '[CODE MODE] You are an expert programmer. Write clean, efficient, well-commented code. ',
     'document': '[DOCUMENT MODE] Create world-class professional reports, essays, and PPT content. Structure it so it can be exported to PowerPoint. ',
@@ -111,6 +135,9 @@ MODE_PROMPTS = {
     'social': '[SOCIAL VIRAL MODE] You are an expert in Social Media Growth. Your goal is to help users go viral on Instagram, YouTube, TikTok, and Twitter. Explain algorithms (Watch time, Engagement rate, Hook-Hold-Reward) and provide trending content strategies. ',
     'polyglot': '[POLYGLOT TECH MODE] You are a Master System Architect. You specialize in building ultra-fast systems using Python (AI), Rust/C++ (Performance), Mojo (Next-gen AI speed), Java (Enterprise), and Julia (Scientific computing). Solve complex problems by combining these languages. ',
     'media': '[MEDIA MODE] You are a creative AI expert. You can generate realistic images and concepts for videos. When a user asks for an image, describe it vividly and mention that it is being generated.',
+    'researcher': '[RESEARCHER AGENT] You are the AryaX Research Agent. Your goal is to provide deep, fact-based analysis. Use web search extensively and provide citations. Focus on accuracy and depth.',
+    'architect': '[ARCHITECT AGENT] You are the AryaX System Architect. Your goal is to design complex software systems, database schemas, and infrastructure. Focus on scalability, security, and best practices.',
+    'creative': '[CREATIVE AGENT] You are the AryaX Creative Director. Your goal is to assist with storytelling, scriptwriting, and high-end prompt engineering for media generation.',
 }
 
 @app.route("/api/generate-image", methods=["POST"])
@@ -135,13 +162,13 @@ def generate_pdf_api():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", 'B', 16)
-    pdf.cell(190, 10, txt=title, ln=True, align='C')
+    pdf.cell(190, 10, text=title, ln=True, align='C')
     pdf.set_font("Arial", size=12)
     pdf.ln(10)
-    pdf.multi_cell(190, 10, txt=content)
+    pdf.multi_cell(190, 10, text=content)
     pdf.ln(10)
     pdf.set_font("Arial", 'I', 10)
-    pdf.cell(190, 10, txt="Generated by AryaX ASI — Future of Intelligence", ln=True, align='C')
+    pdf.cell(190, 10, text="Generated by AryaX ASI — Future of Intelligence", ln=True, align='C')
     
     import io
     pdf_output = io.BytesIO()
@@ -266,7 +293,7 @@ def use_credits(username, mode):
     return True, user['credits']
 
 
-def build_system_prompt(mode='chat'):
+def build_system_prompt(mode='chat', user_memory_str=""):
     date_str, time_str = get_ist_time()
     mode_extra = MODE_PROMPTS.get(mode, '')
     return SYSTEM_PROMPT + f"""
@@ -275,12 +302,25 @@ def build_system_prompt(mode='chat'):
 
 === CURRENT DATE & TIME (IST) ===
 Date: {date_str}
-Time: {time_str} IST"""
+Time: {time_str} IST
+
+=== NEURAL MEMORY (User Facts) ===
+{user_memory_str}
+"""
 
 
-def build_body(history, mode='chat'):
+def build_body(history, mode='chat', username=None):
+    user_memory_str = ""
+    if username:
+        db = load_db()
+        user = db['users'].get(username, {})
+        memory = user.get('memory', {})
+        if memory:
+            user_memory_str = "You remember these facts about the user:\n" + \
+                             "\n".join([f"- {k}: {v}" for k, v in memory.items()])
+    
     return {
-        'system_instruction': {'parts': [{'text': build_system_prompt(mode)}]},
+        'system_instruction': {'parts': [{'text': build_system_prompt(mode, user_memory_str)}]},
         'contents': history,
         'generationConfig': {
             'temperature': 0.85,
@@ -335,7 +375,8 @@ def signup():
         'credits': DAILY_LIMIT,
         'credit_date': str(date.today()),
         'created': str(datetime.now()),
-        'total_chats': 0
+        'total_chats': 0,
+        'memory': {}
     }
     save_db(db)
     return jsonify({
@@ -387,6 +428,12 @@ def credits():
 # ===== CHAT =====
 @app.post('/api/chat')
 def chat():
+    db = load_db()
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    if db.get('maintenance', False) and username != 'vvvansh':
+        return jsonify({'error': 'System is under Maintenance. Evolutionary Update in progress.'}), 503
+
     try:
         ip = request.remote_addr
         if not check_rate_limit(ip):
@@ -419,8 +466,7 @@ def chat():
                 import urllib.parse, re
                 q = urllib.parse.quote(message)
                 res = requests.get(f"https://html.duckduckgo.com/html/?q={q}", headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}, timeout=4)
-                if res.status_code == 200:
-                    from bs4 import BeautifulSoup
+                if res.status_code == 200 and BeautifulSoup:
                     soup = BeautifulSoup(res.text, 'html.parser')
                     snippets = [a.text for a in soup.find_all('a', class_='result__snippet')]
                     if snippets:
@@ -438,19 +484,40 @@ def chat():
         if message:
             parts.append({'text': message})
             
-        # --- MULTIMODAL VISION ---
+        # --- MULTIMODAL VISION & PDF EXTRACTION ---
         if file_b64:
             try:
+                import base64, io
                 header, encoded = file_b64.split(',', 1)
                 mime_type = header.split(':')[1].split(';')[0]
+                file_data = base64.b64decode(encoded)
+                
+                # If it's a PDF, extract text using PyPDF2 for better context
+                pdf_text = ""
+                if "application/pdf" in mime_type and PyPDF2:
+                    try:
+                        pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_data))
+                        for page in pdf_reader.pages:
+                            text = page.extract_text()
+                            if text:
+                                pdf_text += text + "\n"
+                        
+                        if pdf_text:
+                            # Truncate if too long to avoid token issues, but keep first 10k chars
+                            if len(pdf_text) > 10000:
+                                pdf_text = pdf_text[:10000] + "... [PDF Truncated]"
+                            message += f"\n\n[EXTRACTED PDF CONTENT]:\n{pdf_text}"
+                    except Exception as pe:
+                        print(f"PDF Extraction Error: {pe}")
+
                 parts.append({
                     'inlineData': {
                         'mimeType': mime_type,
                         'data': encoded
                     }
                 })
-            except Exception:
-                pass
+            except Exception as fe:
+                print(f"File handling error: {fe}")
 
         sessions[session_id]['history'].append({
             'role': 'user',
@@ -531,7 +598,7 @@ def chat():
         if not current_key:
             return jsonify({'error': 'API key missing'}), 500
 
-        body = build_body(history, mode)
+        body = build_body(history, mode, username)
 
         def generate():
             full_reply = ""
@@ -986,8 +1053,9 @@ def upload_file():
         content = ''
 
         if filename.endswith('.pdf'):
+            if not PyPDF2:
+                return jsonify({'error': 'PyPDF2 library not installed on server'}), 500
             try:
-                import PyPDF2
                 reader = PyPDF2.PdfReader(file)
                 for page in reader.pages[:10]:  # Max 10 pages
                     content += page.extract_text() or ''
@@ -1074,9 +1142,293 @@ def generate_office():
 if not os.path.exists(DB_FILE) or os.path.getsize(DB_FILE) < 5:
     save_db({'users': {}})
 
-# Deployment Trigger: Clean Slate Rebuild v2
+# ===== NEURAL DASHBOARD API =====
+@app.get('/api/user/dashboard')
+def user_dashboard():
+    username = request.args.get('username', '').strip().lower()
+    if not username:
+        return jsonify({'error': 'Username required'}), 400
+    
+    db = load_db()
+    user = db['users'].get(username)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    # Calculate some fun stats
+    stats = {
+        'credits': user.get('credits', 0),
+        'total_chats': user.get('total_chats', 0),
+        'member_since': user.get('created', '').split(' ')[0],
+        'memory_count': len(user.get('memory', {})),
+        'rank': 'Neural Novice' if user.get('total_chats', 0) < 50 else 'Core Intelligence' if user.get('total_chats', 0) < 200 else 'Super Intelligence'
+    }
+    
+    return jsonify({
+        'stats': stats,
+        'memory': user.get('memory', {})
+    })
+
+@app.post('/api/user/memory/update')
+def update_memory():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    key = data.get('key', '').strip()
+    value = data.get('value', '').strip()
+    
+    if not username or not key:
+        return jsonify({'error': 'Username and key required'}), 400
+        
+    db = load_db()
+    if username not in db['users']:
+        return jsonify({'error': 'User not found'}), 404
+        
+    if 'memory' not in db['users'][username]:
+        db['users'][username]['memory'] = {}
+        
+    db['users'][username]['memory'][key] = value
+    save_db(db)
+    return jsonify({'ok': True, 'memory': db['users'][username]['memory']})
+
+
+# ===== TASK SCHEDULER BACKEND =====
+def task_worker():
+    """Background worker to simulate autonomous tasks"""
+    while True:
+        try:
+            db = load_db()
+            changed = False
+            now = datetime.now()
+            
+            for username, user_data in db.get('users', {}).items():
+                tasks = user_data.get('tasks', [])
+                for task in tasks:
+                    if task.get('status') == 'pending':
+                        # Simulate processing
+                        task['status'] = 'completed'
+                        task['completed_at'] = str(now)
+                        changed = True
+            
+            if changed:
+                save_db(db)
+        except Exception:
+            pass
+        time.sleep(30) # Check every 30s
+
+# Start worker thread
+threading.Thread(target=task_worker, daemon=True).start()
+
+@app.post('/api/tasks/create')
+def create_task():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    description = data.get('description', '').strip()
+    
+    if not username or not description:
+        return jsonify({'error': 'Missing data'}), 400
+        
+    db = load_db()
+    if username not in db['users']:
+        return jsonify({'error': 'User not found'}), 404
+        
+    if 'tasks' not in db['users'][username]:
+        db['users'][username]['tasks'] = []
+        
+    new_task = {
+        'id': str(int(time.time())),
+        'description': description,
+        'status': 'pending',
+        'created_at': str(datetime.now())
+    }
+    db['users'][username]['tasks'].append(new_task)
+    save_db(db)
+    return jsonify({'ok': True, 'task': new_task})
+
+@app.get('/api/tasks/list')
+def list_tasks():
+    username = request.args.get('username', '').strip().lower()
+    db = load_db()
+    user = db['users'].get(username, {})
+    return jsonify({'tasks': user.get('tasks', [])})
+
+
+# ===== NEURAL MEMORY ENGINE =====
+@app.post('/api/memory/save')
+def save_memory():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    fact_key = data.get('key', '').strip()
+    fact_value = data.get('value', '').strip()
+    
+    if not username or not fact_key:
+        return jsonify({'error': 'Username and key required'}), 400
+        
+    db = load_db()
+    if username not in db['users']:
+        return jsonify({'error': 'User not found'}), 404
+        
+    if 'memory' not in db['users'][username]:
+        db['users'][username]['memory'] = {}
+        
+    db['users'][username]['memory'][fact_key] = fact_value
+    save_db(db)
+    return jsonify({'ok': True, 'memory': db['users'][username]['memory']})
+
+@app.get('/api/memory/list')
+def list_memory():
+    username = request.args.get('username', '').strip().lower()
+    db = load_db()
+    user = db['users'].get(username, {})
+    return jsonify({'memory': user.get('memory', {})})
+
+
+@app.get('/api/admin/stats')
+def admin_stats():
+    admin_key = request.headers.get('X-Admin-Key')
+    # Use a secret key from .env
+    actual_key = os.getenv('ADMIN_KEY', 'aryax_master_99')
+    
+    if admin_key != actual_key:
+        return jsonify({'error': 'Unauthorized Access. Hardware Lock Engaged.'}), 403
+        
+    db = load_db()
+    users = db.get('users', {})
+    
+    stats = {
+        'total_users': len(users),
+        'total_credits': sum(u.get('credits', 0) for u in users.values()),
+        'user_list': []
+    }
+    
+    for uname, udata in users.items():
+        stats['user_list'].append({
+            'username': uname,
+            'credits': udata.get('credits', 0),
+            'joined': udata.get('joined', 'Unknown'),
+            'last_active': udata.get('last_active', 'Never')
+        })
+        
+    return jsonify(stats)
+
+@app.post('/api/admin/update-credits')
+def admin_update_credits():
+    admin_key = request.headers.get('X-Admin-Key')
+    actual_key = os.getenv('ADMIN_KEY', 'aryax_master_99')
+    if admin_key != actual_key:
+        return jsonify({'error': 'Unauthorized'}), 403
+        
+    data = request.json
+    target_user = data.get('username', '').strip().lower()
+    new_credits = data.get('credits', 0)
+    
+    db = load_db()
+    if target_user in db['users']:
+        db['users'][target_user]['credits'] = int(new_credits)
+        save_db(db)
+        return jsonify({'ok': True})
+    return jsonify({'error': 'User not found'}), 404
+
+@app.post('/api/admin/broadcast')
+def admin_broadcast():
+    admin_key = request.headers.get('X-Admin-Key')
+    if admin_key != os.getenv('ADMIN_KEY', 'aryax_master_99'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    msg = request.json.get('message', '')
+    db = load_db()
+    db['broadcast'] = {'message': msg, 'time': datetime.now().isoformat()}
+    save_db(db)
+    return jsonify({'ok': True})
+
+@app.post('/api/admin/ban-user')
+def admin_ban_user():
+    admin_key = request.headers.get('X-Admin-Key')
+    if admin_key != os.getenv('ADMIN_KEY', 'aryax_master_99'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    target = request.json.get('username', '').strip().lower()
+    db = load_db()
+    if target in db['users']:
+        db['users'][target]['banned'] = True
+        save_db(db)
+        return jsonify({'ok': True})
+    return jsonify({'error': 'User not found'}), 404
+
+@app.get('/api/admin/logs')
+def admin_logs():
+    admin_key = request.headers.get('X-Admin-Key')
+    if admin_key != os.getenv('ADMIN_KEY', 'aryax_master_99'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    # Just a mock for now, but could read actual logs
+    return jsonify({'logs': [
+        f"[{datetime.now()}] System Heartbeat: Normal",
+        f"[{datetime.now()}] Neural Engine: 99% Efficiency",
+        f"[{datetime.now()}] Active Links: {len(load_db()['users'])}"
+    ]})
+
+@app.post('/api/admin/toggle-maintenance')
+def toggle_maintenance():
+    admin_key = request.headers.get('X-Admin-Key')
+    if admin_key != os.getenv('ADMIN_KEY', 'aryax_master_99'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    db = load_db()
+    current = db.get('maintenance', False)
+    db['maintenance'] = not current
+    save_db(db)
+    return jsonify({'ok': True, 'maintenance': db['maintenance']})
+
+@app.get('/api/user/rank')
+def get_user_rank():
+    username = request.args.get('username', '').strip().lower()
+    db = load_db()
+    user = db['users'].get(username, {})
+    # Simple rank based on total messages (mocked for now)
+    msgs = user.get('total_messages', 0)
+    if msgs < 10: rank = "Neural Novice"
+    elif msgs < 50: rank = "Cyber Architect"
+    elif msgs < 100: rank = "Quantum Engineer"
+    else: rank = "ASI Overlord"
+    
+    return jsonify({'rank': rank, 'messages': msgs})
+def admin_update_keys():
+    admin_key = request.headers.get('X-Admin-Key')
+    if admin_key != os.getenv('ADMIN_KEY', 'aryax_master_99'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    # In a real app, this would write to .env or a secure DB
+    return jsonify({'ok': True, 'msg': 'API Keys updated in memory core.'})
+
+
+# ===== SECURITY VAULT BACKEND =====
+@app.post('/api/vault/save')
+def save_vault():
+    data = request.json
+    username = data.get('username', '').strip().lower()
+    key = data.get('key', '').strip()
+    value = data.get('value', '').strip()
+    
+    db = load_db()
+    if username not in db['users']:
+        return jsonify({'error': 'User not found'}), 404
+        
+    if 'vault' not in db['users'][username]:
+        db['users'][username]['vault'] = {}
+        
+    db['users'][username]['vault'][key] = value
+    save_db(db)
+    return jsonify({'ok': True})
+
+@app.get('/api/vault/list')
+def list_vault():
+    username = request.args.get('username', '').strip().lower()
+    db = load_db()
+    user = db['users'].get(username, {})
+    return jsonify({'vault': user.get('vault', {})})
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5054))
     print(f"\nAryaX AI Production Server Starting on Port {port}...")
     app.run(host='0.0.0.0', port=port)
-

@@ -2,8 +2,8 @@
 echo ==============================================
 echo Pushing AryaX World-Class UI & Branding Fixes...
 echo ==============================================
-git add public/index.html public/style.css
-git commit -m "UI: Total Overhaul for Professional ASI Branding and Layout Fixes"
+git add .
+git commit -m "AryaX ASI v7.0: Level 1,000,000 Galactic Intelligence - Wake-word, Space Explorer & Multiversal Core"
 git push origin main
 echo.
 echo ==============================================
