@@ -1,15 +1,17 @@
-const CACHE_NAME = 'aryax-asi-cache-v1';
+const CACHE_NAME = 'aryax-asi-cache-v2-superfast';
 const urlsToCache = [
     '/',
     '/index.html',
-    '/style.css?v=3.0',
-    '/script.js?v=3.0',
+    '/style.css?v=4.2',
+    '/script.js',
     '/manifest.json',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
-    'https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js'
+    'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap',
+    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
 ];
 
 self.addEventListener('install', event => {
+    self.skipWaiting(); // Force the waiting service worker to become the active service worker
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(urlsToCache))
@@ -21,26 +23,26 @@ self.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') return;
     
     // API calls bypass cache to ensure real-time AI responses
-    if (event.request.url.includes('/api/')) return;
+    if (event.request.url.includes('/api/') || event.request.url.includes('google-analytics')) return;
 
+    // Stale-While-Revalidate Strategy for Super Fast Load
     event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                if (response) return response;
-                return fetch(event.request).then(
-                    function(response) {
-                        if(!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-                        var responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then(function(cache) {
-                                cache.put(event.request, responseToCache);
-                            });
-                        return response;
-                    }
-                );
-            })
+        caches.match(event.request).then(cachedResponse => {
+            const fetchPromise = fetch(event.request).then(networkResponse => {
+                // Update the cache with the new network response
+                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, networkResponse.clone());
+                    });
+                }
+                return networkResponse;
+            }).catch(() => {
+                // Offline fallback (e.g., return cached offline page if implemented)
+            });
+
+            // Return the cached response immediately if available, otherwise wait for network
+            return cachedResponse || fetchPromise;
+        })
     );
 });
 
@@ -54,6 +56,6 @@ self.addEventListener('activate', event => {
                     }
                 })
             );
-        })
+        }).then(() => self.clients.claim()) // Claim clients immediately
     );
 });

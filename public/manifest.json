@@ -4,17 +4,17 @@
     "description": "The World's Most Advanced AI Agent",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#ffffff",
+    "background_color": "#060608",
+    "theme_color": "#060608",
     "orientation": "portrait-primary",
     "icons": [
         {
-            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAgMTBMMTAgODBIMzVMNTAgNTBMNjUgODBIOTBMNTAgMTBaIiBmaWxsPSIjMDAwIi8+PC9zdmc+",
+            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjMGEwYTBhIi8+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNNTAsMTYgTDE1LDg0IEgzMiBMMzksNjMgSDYxIEw2OCw4NCBIODUgTDUwLDE2IFogTTQ0LDU1IEw1MCwzMCBMNTYsNTUgWiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
             "sizes": "192x192",
             "type": "image/svg+xml"
         },
         {
-            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAgMTBMMTAgODBIMzVMNTAgNTBMNjUgODBIOTBMNTAgMTBaIiBmaWxsPSIjMDAwIi8+PC9zdmc+",
+            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjMGEwYTBhIi8+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNNTAsMTYgTDE1LDg0IEgzMiBMMzksNjMgSDYxIEw2OCw4NCBIODUgTDUwLDE2IFogTTQ0LDU1IEw1MCwzMCBMNTYsNTUgWiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=",
             "sizes": "512x512",
             "type": "image/svg+xml"
         }

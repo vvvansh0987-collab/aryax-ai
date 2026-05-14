@@ -687,10 +687,10 @@ function showToast(msg) {
     t.textContent = msg;
     t.style.cssText = `
         position:fixed; bottom:120px; left:50%; transform:translateX(-50%);
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(59, 130, 246, 0.9));
-        backdrop-filter: blur(20px); color: white; padding: 12px 28px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px); color: #000; padding: 12px 28px;
         border-radius: 100px; font-size: 14px; font-weight: 600; z-index: 100000;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(168, 85, 247, 0.4);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         animation: fadeInOut 4s forwards; font-family: 'Outfit', sans-serif;
     `;
     document.body.appendChild(t);
@@ -744,9 +744,9 @@ function showAgentToast(agent) {
     const agentName = agent.charAt(0).toUpperCase() + agent.slice(1);
     toast.style.cssText = `
         position:fixed; top:30px; left:50%; transform:translateX(-50%);
-        background: rgba(10, 10, 15, 0.8);
+        background: rgba(10, 10, 15, 0.85);
         backdrop-filter: blur(15px);
-        border: 1px solid rgba(168, 85, 247, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
         padding: 10px 22px;
         border-radius: 100px;
@@ -757,11 +757,11 @@ function showAgentToast(agent) {
         display: flex;
         align-items: center;
         gap: 12px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(168, 85, 247, 0.2);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         animation: fadeInOut 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     `;
     toast.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
         </svg>
         <span style="letter-spacing: 0.5px; text-transform: uppercase;">Neural Shift: ${agentName} Active</span>
@@ -1779,4 +1779,13 @@ function updateThinkingFeed() {
     if (feed.children.length > 5) feed.removeChild(feed.lastChild);
     feed.prepend(div);
     setTimeout(() => div.style.opacity = '0.7', 10);
+}
+
+// ── PWA SERVICE WORKER REGISTRATION ───────────────────
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('AryaX PWA Active. Fast Cache Enabled.', reg))
+            .catch(err => console.log('AryaX PWA failed.', err));
+    });
 }

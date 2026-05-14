@@ -476,6 +476,26 @@ def chat():
 
         if search_context:
             message += search_context
+
+        # --- ASI TOOLCHAIN: AUTONOMOUS WEB SURFER ---
+        import re
+        url_match = re.search(r'(https?://\S+)', message)
+        if url_match and BeautifulSoup:
+            try:
+                url_to_scrape = url_match.group(1)
+                headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+                web_resp = requests.get(url_to_scrape, headers=headers, timeout=5)
+                if web_resp.status_code == 200:
+                    soup = BeautifulSoup(web_resp.text, 'html.parser')
+                    # Remove scripts and styles
+                    for script in soup(["script", "style"]):
+                        script.extract()
+                    scraped_text = soup.get_text(separator=' ', strip=True)
+                    if len(scraped_text) > 8000:
+                        scraped_text = scraped_text[:8000] + "... [TRUNCATED]"
+                    message += f"\n\n[AUTONOMOUS WEB SURFER: Extracted Content from {url_to_scrape}]:\n{scraped_text}\nUse this content to answer the user."
+            except Exception as e:
+                pass
             
         if sandbox:
             message += "\n[SANDBOX ENABLED]: The user wants you to output precise calculations or code as if you ran it in a secure python sandbox. Be 100% accurate."
